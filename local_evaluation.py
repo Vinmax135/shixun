@@ -46,7 +46,7 @@ MAX_API_RETRIES = 3
 DEFAULT_NUM_WORKERS = 8
 
 MIN_BATCH_SIZE = 1
-MAX_BATCH_SIZE = 16
+MAX_BATCH_SIZE = 8
 
 
 MAX_RESPONSE_LENGTH_IN_TOKENS = 75
@@ -102,7 +102,7 @@ class CRAGEvaluator:
             self.qwen2_pipeline = pipeline(
                 "text-generation",
                 model=self.eval_model_name,
-                max_new_tokens=32,
+                max_new_tokens=8,
                 do_sample=False,
             )
         else:

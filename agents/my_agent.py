@@ -16,7 +16,7 @@ class MyAgent(BaseAgent):
         self.generator = pipeline(
             "text-generation",
             model=MODEL_NAME,
-            max_new_tokens=16,
+            max_new_tokens=8,
             do_sample=False
         )
         print("Initializing MyAgent")
