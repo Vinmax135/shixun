@@ -41,7 +41,7 @@ ensure_crag_cache_dir_is_configured()
 console = Console()
 
 # Constants for configuration
-DEFAULT_EVAL_MODEL = "Qwen/Qwen2-1.5B-Instruct"
+DEFAULT_EVAL_MODEL = "Qwen/Qwen2-3B-Instruct"
 MAX_API_RETRIES = 3
 DEFAULT_NUM_WORKERS = 8
 
@@ -86,9 +86,6 @@ class CRAGEvaluator:
         self.agent_response_map: dict[str, str] = {}
         self.all_turn_data: list[dict[str, any]] = []
         self.session_ids_evaluated: set[str] = set()
-        
-        self.tokenizer = Tokenizer.from_pretrained("meta-llama/Llama-3.2-1B-Instruct")
-        self.tokenizer.enable_truncation(max_length=MAX_RESPONSE_LENGTH_IN_TOKENS)
 
         if self.eval_model_name and "qwen" in self.eval_model_name.lower():
             from transformers import AutoModelForCausalLM, AutoTokenizer
