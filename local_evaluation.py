@@ -89,13 +89,13 @@ class CRAGEvaluator:
 
         if self.eval_model_name and "qwen" in self.eval_model_name.lower():
             from transformers import AutoModelForCausalLM, AutoTokenizer
-            model = AutoModelForCausalLM.from_pretrained(
+            self.model = AutoModelForCausalLM.from_pretrained(
                 self.eval_model_name,
                 device_map="auto",
                 low_cpu_mem_usage=True,
                 trust_remote_code=True,
             )
-            tokenizer = AutoTokenizer.from_pretrained(
+            self.tokenizer = AutoTokenizer.from_pretrained(
                 self.eval_model_name, 
                 trust_remote_code=True,
                 )
@@ -430,9 +430,24 @@ class CRAGEvaluator:
         """
         Truncate each agent response to the maximum allowed length.
         """
-        encodings = self.tokenizer.encode_batch(agent_responses)
-        trimmed_agent_responses = [self.tokenizer.decode(enc.ids) for enc in encodings]
-        return trimmed_agent_responses    
+        if not hasattr(self, "tokenizer") or self.tokenizer is None:
+            return agent_responses  # No tokenizer available, return as is
+
+        # Tokenize and truncate
+        encoded = self.tokenizer(
+            agent_responses,
+            max_length=MAX_RESPONSE_LENGTH_IN_TOKENS,
+            truncation=True,
+            add_special_tokens=False,
+            return_attention_mask=False,
+            return_token_type_ids=False,
+        )
+        # Decode back to text
+        trimmed_agent_responses = [
+            self.tokenizer.decode(ids, skip_special_tokens=True)
+            for ids in encoded["input_ids"]
+        ]
+        return trimmed_agent_responses   
 
 
 def main() -> None:
