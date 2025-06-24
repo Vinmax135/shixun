@@ -102,6 +102,7 @@ class CRAGEvaluator:
             self.qwen2_pipeline = pipeline(
                 "text-generation",
                 model=self.eval_model_name,
+                device="cpu",
                 max_new_tokens=8,
                 do_sample=False,
             )

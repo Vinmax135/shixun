@@ -7,8 +7,8 @@ from cragmm_search.search import UnifiedSearchPipeline
 
 # Configurations Constants
 MODEL_NAME = "Qwen/Qwen2-1.5B-Instruct"
-BATCH_SIZE = 3
-SEARCH_RESULTS = 3
+BATCH_SIZE = 1
+SEARCH_RESULTS = 1
 
 class MyAgent(BaseAgent):
     def __init__(self, search_pipeline: UnifiedSearchPipeline):
