@@ -3,11 +3,6 @@ FROM python:3.10-slim-bookworm
 ENV TRANSFORMERS_CACHE=/home/aicrowd/hf_cache
 ENV HF_HOME=/home/aicrowd/hf_cache
 
-ENV HUGGINGFACE_TOKEN=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
-
-RUN mkdir -p /root/.huggingface && \
-    echo "{\"token\":\"$HUGGINGFACE_TOKEN\"}" > /root/.huggingface/token
-
 # Python setup
 RUN pip install --no-cache-dir -U pip==21.0.1
 COPY requirements.txt /tmp/requirements.txt
