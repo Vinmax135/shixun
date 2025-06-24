@@ -1,0 +1,69 @@
+from PIL import Image
+from typing import Any
+from transformers import pipeline, AutoTokenizer
+
+from agents.base_agent import BaseAgent
+from cragmm_search.search import UnifiedSearchPipeline
+
+# Configurations Constants
+MODEL_NAME = "Qwen/Qwen2-1.5B-Instruct"
+BATCH_SIZE = 1
+SEARCH_RESULTS = 3
+
+class MyAgent(BaseAgent):
+    def __init__(self, search_pipeline: UnifiedSearchPipeline):
+        super().__init__(search_pipeline)
+        self.generator = pipeline(
+            "text-generation",
+            model=MODEL_NAME,
+            device="cpu",
+            max_new_tokens=8,
+            do_sample=False
+        )
+        print("Initializing MyAgent")
+
+    def get_batch_size(self) -> int:
+        return BATCH_SIZE
+    
+    def get_batch_image_info(self, images: list[Image.Image]):
+        image_search_results_batch = []
+
+        for image in images:
+            image_info = self.search_pipeline(image, k=SEARCH_RESULTS)
+            image_search_results_batch.append()
+
+        return image_search_results_batch
+
+    def batch_generate(self, images_information, user_queries) -> list[str]:
+        responses = []
+
+        for image_info, query in zip(images_information, user_queries):
+            prompt = f"""
+                    You are a helpful assistant. Given the following information about an image, 
+                    answer the user's question based on given image informations accurately 
+                    and concisely as possible. Do not generate answers that is not sourced from 
+                    the given image information, If you do not know the answer, respond with 'I don't know'.
+
+                    Image Information:
+                    {image_info}
+
+                    User Question:
+                    {query}
+                    """
+            output = self.generator(prompt)
+            answer = output[0]["generated_text"]
+            responses.append(answer)
+        
+        return responses
+
+    def batch_generate_response(
+        self,
+        queries: list[str],
+        images: list[Image.Image],
+        message_histories: list[list[dict[str, Any]]] = None,
+        ) -> list[str]:
+        
+        images_information = self.get_batch_image_info(images)
+        responses = self.batch_generate(images_information, queries)
+
+        return responses

@@ -1,0 +1,5 @@
+Agent testing:
+local_evaluation.py --dataset-type single-turn --split validation --num-conversations 100 --display-conversations 3 --eval-model gpt-4o-mini --suppress-web-search-api
+
+Initialize:
+1. Run local_evaluation to get datasets
