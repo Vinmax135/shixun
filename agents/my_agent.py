@@ -7,7 +7,7 @@ from cragmm_search.search import UnifiedSearchPipeline
 
 # Configurations Constants
 MODEL_NAME = "Qwen/Qwen2-1.5B-Instruct"
-BATCH_SIZE = 1
+BATCH_SIZE = 3
 SEARCH_RESULTS = 3
 
 class MyAgent(BaseAgent):
@@ -16,6 +16,7 @@ class MyAgent(BaseAgent):
         self.generator = pipeline(
             "text-generation",
             model=MODEL_NAME,
+            device="cpu",
             max_new_tokens=8,
             do_sample=False
         )
@@ -33,7 +34,7 @@ class MyAgent(BaseAgent):
         return image_search_results_batch
 
     def batch_generate(self, images_information, user_queries) -> list[str]:
-        responses = []
+        prompts = []
 
         for image_info, query in zip(images_information, user_queries):
             prompt = f"""
@@ -48,9 +49,10 @@ class MyAgent(BaseAgent):
                     User Question:
                     {query}
                     """
-            output = self.generator(prompt)
-            answer = output[0]["generated_text"]
-            responses.append(answer)
+            prompts.append(prompt)
+        
+        outputs = self.generator(prompts)
+        responses = [output[0]["generated_text"] for output in outputs]
         
         return responses
 
