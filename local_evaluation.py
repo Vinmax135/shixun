@@ -41,7 +41,7 @@ ensure_crag_cache_dir_is_configured()
 console = Console()
 
 # Constants for configuration
-DEFAULT_EVAL_MODEL = "Qwen/Qwen2-3B-Instruct"
+DEFAULT_EVAL_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 MAX_API_RETRIES = 3
 DEFAULT_NUM_WORKERS = 8
 
@@ -102,7 +102,7 @@ class CRAGEvaluator:
             self.qwen2_pipeline = pipeline(
                 "text-generation",
                 model=self.eval_model_name,
-                max_new_tokens=16,
+                max_new_tokens=32,
                 do_sample=False,
             )
         else:
