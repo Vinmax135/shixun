@@ -66,6 +66,8 @@ class MyAgent(BaseAgent):
         
         outputs = self.generator(prompts)
         responses = [output[0]["generated_text"] for output in outputs]
+        for i in responses:
+            print(i)
         
         return responses
 
@@ -77,8 +79,7 @@ class MyAgent(BaseAgent):
         ) -> list[str]:
         
         images_information = self.get_batch_image_info(images)
-        for i in images_information:
-            print(i)
+        
         responses = self.batch_generate(images_information, queries)
 
         return responses
