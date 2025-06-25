@@ -30,7 +30,7 @@ class MyAgent(BaseAgent):
             model=self.model,
             tokenizer=self.tokenizer,
             # Do NOT set device=... here, let the model handle device placement
-            max_new_tokens=8,
+            max_new_tokens=16,
             do_sample=False
         )
         print("Initializing MyAgent")
@@ -53,8 +53,7 @@ class MyAgent(BaseAgent):
             prompt = f"""
                     You are a helpful assistant. Given the following information about an image, 
                     answer the user's question based on given image informations accurately 
-                    and concisely as possible. Do not generate answers that is not sourced from 
-                    the given image information, If you do not know the answer, respond with 'I don't know'.
+                    and concisely as possible. If you do not know the answer, respond with 'I don't know'.
 
                     Image Information:
                     {image_info}
