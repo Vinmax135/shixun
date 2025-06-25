@@ -53,17 +53,18 @@ class MyAgent(BaseAgent):
         for image_info, query in zip(images_information, user_queries):
             prompt = f"""
                     You are a helpful assistant which answers user question based on the given information below,If you dont know say I don't know.
-                    Just return your answer without the prompt
 
                     Information:
                     {json.dumps(image_info, ensure_ascii=False)}
 
                     User Question:
                     {query}
+
+                    Assistant: 
                     """
             prompts.append(prompt)
         
-        outputs = self.generator(prompts)
+        outputs = self.generator(prompts).split("Assistant: ")[-1].strip()
         responses = [output[0]["generated_text"] for output in outputs]
         for i in responses:
             print(i)
