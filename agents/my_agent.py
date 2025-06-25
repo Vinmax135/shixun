@@ -81,4 +81,4 @@ class MyAgent(BaseAgent):
         
         responses = self.batch_generate(images_information, queries)
 
-        return ["The scooter costs $7999"]
+        return responses
