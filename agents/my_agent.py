@@ -8,7 +8,7 @@ from cragmm_search.search import UnifiedSearchPipeline
 # Configurations Constants
 MODEL_NAME = "Qwen/Qwen2-1.5B-Instruct"
 BATCH_SIZE = 1
-SEARCH_RESULTS = 1
+SEARCH_RESULTS = 2
 
 class MyAgent(BaseAgent):
     def __init__(self, search_pipeline: UnifiedSearchPipeline):
@@ -77,6 +77,8 @@ class MyAgent(BaseAgent):
         ) -> list[str]:
         
         images_information = self.get_batch_image_info(images)
+        for i in images_information:
+            print(i)
         responses = self.batch_generate(images_information, queries)
 
         return responses
