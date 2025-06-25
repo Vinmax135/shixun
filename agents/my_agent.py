@@ -30,7 +30,7 @@ class MyAgent(BaseAgent):
             model=self.model,
             tokenizer=self.tokenizer,
             # Do NOT set device=... here, let the model handle device placement
-            max_new_tokens=16,
+            max_new_tokens=8,
             do_sample=False
         )
         print("Initializing MyAgent")
@@ -44,7 +44,6 @@ class MyAgent(BaseAgent):
         for image in images:
             image_search_results_batch.append(self.search_pipeline(image, k=SEARCH_RESULTS))
 
-        print(image_search_results_batch)
         return image_search_results_batch
 
     def batch_generate(self, images_information, user_queries) -> list[str]:
@@ -54,7 +53,8 @@ class MyAgent(BaseAgent):
             prompt = f"""
                     You are a helpful assistant. Given the following information about an image, 
                     answer the user's question based on given image informations accurately 
-                    and concisely as possible. If you do not know the answer, respond with 'I don't know'.
+                    and concisely as possible. Do not generate answers that is not sourced from 
+                    the given image information, If you do not know the answer, respond with 'I don't know'.
 
                     Image Information:
                     {image_info}
@@ -78,7 +78,8 @@ class MyAgent(BaseAgent):
         message_histories: list[list[dict[str, Any]]] = None,
         ) -> list[str]:
         
-        images_information = self.get_batch_image_info(images)
+        # images_information = self.get_batch_image_info(images)
+        images_information = [{'entity_name': 'vespa', 'entity_attributes': {'cost': '$7999', 'brand': 'Xiaomi', 'model': 'gts super 300'}}]
         
         responses = self.batch_generate(images_information, queries)
 
