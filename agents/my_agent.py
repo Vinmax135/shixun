@@ -64,8 +64,8 @@ class MyAgent(BaseAgent):
                     """
             prompts.append(prompt)
         
-        outputs = self.generator(prompts).split("Assistant: ")[-1].strip()
-        responses = [output[0]["generated_text"] for output in outputs]
+        outputs = self.generator(prompts)
+        responses = [output[0]["generated_text"].split("Assistant: ")[-1].strip() for output in outputs]
         for i in responses:
             print(i)
         
