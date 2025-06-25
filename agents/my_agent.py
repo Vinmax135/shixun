@@ -32,7 +32,7 @@ class MyAgent(BaseAgent):
             tokenizer=self.tokenizer,
             # Do NOT set device=... here, let the model handle device placement
             max_new_tokens=16,
-            do_sample=False
+            do_sample=True
         )
         print("Initializing MyAgent")
 
