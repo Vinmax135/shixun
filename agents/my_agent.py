@@ -31,7 +31,7 @@ class MyAgent(BaseAgent):
             model=self.model,
             tokenizer=self.tokenizer,
             # Do NOT set device=... here, let the model handle device placement
-            max_new_tokens=16,
+            max_new_tokens=8,
             do_sample=False
         )
         print("Initializing MyAgent")
@@ -78,8 +78,7 @@ class MyAgent(BaseAgent):
         message_histories: list[list[dict[str, Any]]] = None,
         ) -> list[str]:
         
-        # images_information = self.get_batch_image_info(images)
-        images_information = [{'entity_name': 'vespa', 'entity_attributes': {'cost': '$7999', 'brand': 'Xiaomi', 'model': 'gts super 300'}}]
+        images_information = self.get_batch_image_info(images)
         
         responses = self.batch_generate(images_information, queries)
 
