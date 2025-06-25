@@ -42,7 +42,7 @@ ensure_crag_cache_dir_is_configured()
 console = Console()
 
 # Constants for configuration
-DEFAULT_EVAL_MODEL = "Qwen/Qwen2-1.5B-Instruct"
+DEFAULT_EVAL_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 MAX_API_RETRIES = 3
 DEFAULT_NUM_WORKERS = 8
 

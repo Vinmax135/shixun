@@ -7,7 +7,7 @@ from agents.base_agent import BaseAgent
 from cragmm_search.search import UnifiedSearchPipeline
 
 # Configurations Constants
-MODEL_NAME = "Qwen/Qwen2-1.5B-Instruct"
+MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 1
 SEARCH_RESULTS = 2
 
@@ -66,8 +66,6 @@ class MyAgent(BaseAgent):
         
         outputs = self.generator(prompts)
         responses = [output[0]["generated_text"].split("Assistant: ")[-1].strip() for output in outputs]
-        for i in responses:
-            print(i)
         
         return responses
 
