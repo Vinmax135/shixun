@@ -66,6 +66,7 @@ class MyAgent(BaseAgent):
         responses = [output[0]["generated_text"] for output in outputs]
         for i in outputs:
             print(i)
+            print(type(i))
         
         return responses
 
