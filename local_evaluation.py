@@ -108,7 +108,7 @@ class CRAGEvaluator:
                 "text-generation",
                 model=self.model,
                 tokenizer=self.tokenizer,
-                max_new_tokens=8,
+                max_new_tokens=16,
                 do_sample=False,
             )
         else:

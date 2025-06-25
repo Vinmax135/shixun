@@ -1,6 +1,7 @@
 from PIL import Image
 from typing import Any
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+import json
 
 from agents.base_agent import BaseAgent
 from cragmm_search.search import UnifiedSearchPipeline
@@ -30,7 +31,7 @@ class MyAgent(BaseAgent):
             model=self.model,
             tokenizer=self.tokenizer,
             # Do NOT set device=... here, let the model handle device placement
-            max_new_tokens=8,
+            max_new_tokens=16,
             do_sample=False
         )
         print("Initializing MyAgent")
@@ -51,13 +52,10 @@ class MyAgent(BaseAgent):
 
         for image_info, query in zip(images_information, user_queries):
             prompt = f"""
-                    You are a helpful assistant. Given the following information about an image, 
-                    answer the user's question based on given image informations accurately 
-                    and concisely as possible. Do not generate answers that is not sourced from 
-                    the given image information, If you do not know the answer, respond with 'I don't know'.
+                    You are a helpful assistant. Answer the user's question using ONLY the information below. If the answer is not present, say "I don't know".
 
                     Image Information:
-                    {image_info}
+                    {json.dumps(image_info, ensure_ascii=False)}
 
                     User Question:
                     {query}
