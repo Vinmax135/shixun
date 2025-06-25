@@ -108,7 +108,6 @@ class CRAGEvaluator:
                 "text-generation",
                 model=self.model,
                 tokenizer=self.tokenizer,
-                device=0 if self.device == "cuda" else -1,
                 max_new_tokens=8,
                 do_sample=False,
             )
