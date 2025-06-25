@@ -32,7 +32,7 @@ class MyAgent(BaseAgent):
             tokenizer=self.tokenizer,
             # Do NOT set device=... here, let the model handle device placement
             max_new_tokens=16,
-            do_sample=True
+            do_sample=False
         )
         print("Initializing MyAgent")
 
@@ -64,7 +64,7 @@ class MyAgent(BaseAgent):
         
         outputs = self.generator(prompts)
         responses = [output[0]["generated_text"] for output in outputs]
-        for i in responses:
+        for i in outputs:
             print(i)
         
         return responses
