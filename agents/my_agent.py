@@ -44,6 +44,7 @@ class MyAgent(BaseAgent):
         for image in images:
             image_search_results_batch.append(self.search_pipeline(image, k=SEARCH_RESULTS))
 
+        print(image_search_results_batch)
         return image_search_results_batch
 
     def batch_generate(self, images_information, user_queries) -> list[str]:
