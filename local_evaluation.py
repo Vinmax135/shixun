@@ -26,6 +26,7 @@ from rich.console import Console
 from rich.panel import Panel
 from transformers import pipeline
 from accelerate import disk_offload
+import torch
 
 from agents.base_agent import BaseAgent
 from agents.user_config import UserAgent
@@ -87,12 +88,16 @@ class CRAGEvaluator:
         self.all_turn_data: list[dict[str, any]] = []
         self.session_ids_evaluated: set[str] = set()
 
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
         if self.eval_model_name and "qwen" in self.eval_model_name.lower():
+            offload_folder = "./offloadloc"
             from transformers import AutoModelForCausalLM, AutoTokenizer
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.eval_model_name,
-                device_map="auto",
-                low_cpu_mem_usage=True,
+                device_map="auto",  # Enable automatic device placement and offloading
+                offload_folder=offload_folder,
+                torch_dtype="auto",
                 trust_remote_code=True,
             )
             self.tokenizer = AutoTokenizer.from_pretrained(
@@ -101,8 +106,9 @@ class CRAGEvaluator:
                 )
             self.qwen2_pipeline = pipeline(
                 "text-generation",
-                model=self.eval_model_name,
-                device="cpu",
+                model=self.model,
+                tokenizer=self.tokenizer,
+                device=0 if self.device == "cuda" else -1,
                 max_new_tokens=8,
                 do_sample=False,
             )
@@ -521,11 +527,15 @@ def main() -> None:
     console.print(
         f"[bold green]Loading from HuggingFace:[/bold green] {repo_name} (revision: {args.revision})"
     )
-    dataset = load_dataset(repo_name, revision=args.revision)
-    available_splits = list(dataset.keys())
-    split_to_use = args.split if args.split in available_splits else available_splits[0]
+
+    if args.num_conversations == -1:
+        split_to_load = args.split
+    else:
+        split_to_load = f"{args.split}[:{args.num_conversations}]"
+
+    dataset = load_dataset(repo_name, revision=args.revision, split=split_to_load)
     console.print(
-        f"[bold green]Using split:[/bold green] '{split_to_use}' with {len(dataset[split_to_use])} examples"
+        f"[bold green]Using split:[/bold green] '{split_to_load}' with {len(dataset)} examples"
     )
 
     if args.eval_model.lower() == "none":
@@ -542,9 +552,6 @@ def main() -> None:
                 expand=False,
             )
         )
-
-    if args.num_conversations == -1:
-        args.num_conversations = len(dataset[split_to_use])
 
     # Suppress web search API if the flag is set - useful for Task 1 (Single-source Augmentation)
     search_api_text_model_name = "sentence-transformers/all-MiniLM-L6-v2"
@@ -564,7 +571,7 @@ def main() -> None:
     )
     
     evaluator = CRAGEvaluator(
-        dataset=dataset[split_to_use],
+        dataset=dataset,
         agent=UserAgent(search_pipeline=search_pipeline),
         eval_model_name=args.eval_model,
         num_conversations=args.num_conversations,

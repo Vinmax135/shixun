@@ -1,6 +1,6 @@
 from PIL import Image
 from typing import Any
-from transformers import pipeline, AutoTokenizer
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 
 from agents.base_agent import BaseAgent
 from cragmm_search.search import UnifiedSearchPipeline
@@ -13,10 +13,23 @@ SEARCH_RESULTS = 1
 class MyAgent(BaseAgent):
     def __init__(self, search_pipeline: UnifiedSearchPipeline):
         super().__init__(search_pipeline)
+        offload_folder = "./offload_myagent"
+        self.model = AutoModelForCausalLM.from_pretrained(
+            MODEL_NAME,
+            device_map="auto",           # Enables automatic offloading
+            offload_folder=offload_folder,
+            torch_dtype="auto",
+            trust_remote_code=True,
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            MODEL_NAME,
+            trust_remote_code=True,
+        )
         self.generator = pipeline(
             "text-generation",
-            model=MODEL_NAME,
-            device="cpu",
+            model=self.model,
+            tokenizer=self.tokenizer,
+            # Do NOT set device=... here, let the model handle device placement
             max_new_tokens=8,
             do_sample=False
         )
