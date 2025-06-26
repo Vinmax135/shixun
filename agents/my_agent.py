@@ -2,6 +2,7 @@ from PIL import Image
 from typing import Any
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 import json
+import re
 
 from agents.base_agent import BaseAgent
 from cragmm_search.search import UnifiedSearchPipeline
@@ -39,6 +40,41 @@ class MyAgent(BaseAgent):
     def get_batch_size(self) -> int:
         return BATCH_SIZE
     
+    def preprocess_image_information(self, images_information):
+        results = []
+
+        for information in images_information:
+            result = {}
+            for output in information:
+                if not output["score"] > 0.85:
+                    continue
+
+                for entity in output["entities"]:
+                    result["entity_name"] = entity["entity_name"]
+
+                    for key, value in entity["entity_attributes"].items():
+                        # HTML Tags
+                        value = re.sub(r'<.*?>', '', value)
+
+                        # Whitespace Char
+                        value = re.sub(r'[\n\t\r]', '', value).strip()
+
+                        # Wikipedia Template
+                        value = re.sub(
+                            r'\{\{([^\{\}]+)\}\}',
+                            lambda m: ' '.join([p for p in m.group(1).split('|')[1:] if '=' not in p]),
+                            value
+                        )
+
+                        # Wikipedia Links
+                        value = re.sub(r'\[\[([^\|\]]+)\|([^\]]+)\]\]', r' \2', value)
+                        value = re.sub(r'\[\[([^\]]+)\]\]', r' \1', value)
+
+                        result[key] = value.strip()
+            results.append(result)
+        
+        return results
+
     def get_batch_image_info(self, images: list[Image.Image]):
         image_search_results_batch = []
 
@@ -77,6 +113,7 @@ class MyAgent(BaseAgent):
         ) -> list[str]:
         
         images_information = self.get_batch_image_info(images)
+        images_information = self.preprocess_image_information(images_information)
         
         responses = self.batch_generate(images_information, queries)
 
