@@ -149,7 +149,8 @@ class MyAgent(BaseAgent):
             if isinstance(image_info, list):
                 info_str = ""
                 for idx, info in enumerate(image_info, 1):
-                    info_str += f"Option {idx}: {json.dumps(info, ensure_ascii=False)}\n"
+                    info_text = "; ".join(f"{k.replace('_', ' ').capitalize()}: {v}" for k, v in info.items())
+                    info_str += f"Option {idx}: {info_text}\n"
                 prompt = (
                     "You are a helpful assistant.\n"
                     "You are given several pieces of information (options) about an image. "
