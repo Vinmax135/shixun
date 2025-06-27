@@ -12,36 +12,7 @@ search_pipeline = UnifiedSearchPipeline(
     web_hf_dataset_id=None,
     image_hf_dataset_id="crag-mm-2025/image-search-index-validation"
 )
-outputs = search_pipeline(image, k=5)
 
-# -------- Preprocess each entity --------
-image_info = []
-for output in outputs:
-    
-    for entity in output["entities"]:
-        entity_result = {} # Keep information of an entity
-        entity_result["entity_name"] = entity["entity_name"]
-
-        for key, value in entity["entity_attributes"].items():
-            # HTML Tags
-            value = re.sub(r'<.*?>', '', value)
-
-            # Whitespace Char
-            value = re.sub(r'[\n\t\r]', '', value).strip()
-
-            # Wikipedia Template
-            value = re.sub(
-                r'\{\{([^\{\}]+)\}\}',
-                lambda m: ' '.join([p for p in m.group(1).split('|')[1:] if '=' not in p]),
-                value
-            )
-
-            # Wikipedia Links
-            value = re.sub(r'\[\[([^\|\]]+)\|([^\]]+)\]\]', r' \2', value)
-            value = re.sub(r'\[\[([^\]]+)\]\]', r' \1', value)
-
-            entity_result[key] = value.strip()
-
-        image_info.append(entity_result)
-
-print(json.dumps(image_info, indent="\t"))
+for i in range(5):
+    output = search_pipeline(image, k=1)
+    print(output)
