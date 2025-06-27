@@ -154,7 +154,7 @@ class MyAgent(BaseAgent):
             prompts.append(prompt)
 
         output = self.generator(prompts)
-        summary = [output[0]["generated_text"].split("Summary:")[-1].strip() for each in output]
+        summary = [each[0]["generated_text"].split("Summary:")[-1].strip() for each in output]
         return summary
 
     def generate_answer(self, images_info, queries) -> list[str]:
