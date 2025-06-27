@@ -97,6 +97,7 @@ class MyAgent(BaseAgent):
             entity_emb = self.semantic_model.encode(entity_string, convert_to_tensor=True)
                 
             scores = util.cos_sim(query_emb, entity_emb)[0]
+            print(scores)
             best = scores.argmax().item()
             preprocessed_images_info.append(entities_info[best])
 
