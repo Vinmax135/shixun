@@ -109,7 +109,8 @@ class MyAgent(BaseAgent):
 
         for image_info, query in zip(images_info, queries):
             prompt = f"""
-                    You are a helpful assistant which answers user question based on the given information below,If you dont know say I don't know.
+                    You are a helpful assistant which answers user question based on the given information below,
+                    keep the answers as short and simple as possible, if you dont know say I don't know.
 
                     Information:
                     {json.dumps(image_info, ensure_ascii=False)}
@@ -123,6 +124,9 @@ class MyAgent(BaseAgent):
         
         outputs = self.generator(prompts)
         responses = [output[0]["generated_text"].split("Assistant: ")[-1].strip() for output in outputs]
+        
+        for output in outputs:
+            print(output, end="\n\n")
         
         return responses
 
