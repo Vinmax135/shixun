@@ -158,6 +158,7 @@ class MyAgent(BaseAgent):
                     "If none are relevant, say you don't know.\n\n"
                     f"{info_str}"
                     f"Question: {query}\n"
+                    "Answer it in a sentence as short and simple as possible without yapping. "
                     "Answer:"
                 )
             else:
