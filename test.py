@@ -4,7 +4,7 @@ import re
 from cragmm_search.search import UnifiedSearchPipeline
 from crag_image_loader import ImageLoader
 
-image = ImageLoader("https://upload.wikimedia.org/wikipedia/commons/b/b2/The_Beekman_tower_1_%286214362763%29.jpg").get_image()
+image = ImageLoader("https://upload.wikimedia.org/wikipedia/commons/9/9a/202312_Dodols_sold_in_a_market_in_Sri_Lanka.jpg").get_image()
 
 search_pipeline = UnifiedSearchPipeline(
     text_model_name=None,
@@ -17,8 +17,6 @@ outputs = search_pipeline(image, k=5)
 # -------- Preprocess each entity --------
 image_info = []
 for output in outputs:
-    if not output["score"] > 0.85:
-        continue
     
     for entity in output["entities"]:
         entity_result = {} # Keep information of an entity
@@ -45,3 +43,5 @@ for output in outputs:
             entity_result[key] = value.strip()
 
         image_info.append(entity_result)
+
+print(json.dumps(image_info, indent="\t"))

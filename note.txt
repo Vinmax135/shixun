@@ -1,10 +1,111 @@
-{'index': 20866, 'score': 0.8983101844787598, 'url': 'https://upload.wikimedia.org/wikipedia/commons/3/34/The_Beekman_tower_from_the_East_River_%286215420371%29.jpg', 'entities': [{'entity_name': '8 Spruce Street', 'entity_attributes': {'name': '8 Spruce Street<br />(New York by Gehry)', 'image': '8 Spruce Street (01030p).jpg', 'image_size': '200px', 'address': '8 Spruce Street<br />[[Manhattan]], New York, U.S. 10038', 'mapframe_wikidata': 'yes', 'coordinates': '{{coord|40|42|39|N|74|00|20|W|region:US-NY_type:landmark|display|=|inline,title}}', 'status': 'Complete', 'start_date': '2006', 'completion_date': '2010', 'opening': 'February 2011', 'building_type': '[[Mixed-use development|Mixed-use]]', 'architectural_style': '[[Deconstructivism]]', 'roof': '{{convert|870|ft|m|0|abbr|=|on}}', 'top_floor': '{{convert|827|ft|abbr|=|on}}', 'floor_count': '76', 'floor_area': '{{convert|1000000|sqft|m2|abbr|=|on}}', 'architect': '[[Frank Gehry]]', 'structural_engineer': '[[WSP Group|WSP Cantor Seinuk]]', 'main_contractor': 'Kreisler Borg Florman', 'developer': '[[Forest City Ratner]]', 'engineer': '[[Jaros, Baum & Bolles]] (MEP)', 'owner': '8 Spruce (NY) Owner LLC', 'management': 'Beam Living', 'website': '{{URL|https://live8spruce.com/}}'}}]}
-{'index': 28218, 'score': 0.8472009301185608, 'url': 'https://upload.wikimedia.org/wikipedia/commons/f/fd/One_Madison_2013.jpg', 'entities': [{'entity_name': 'One Madison', 'entity_attributes': {'name': 'One Madison', 'former_names': 'The Saya, One Madison Park', 'image': 'File:One Madison 2013 crop.jpg', 'image_alt': 'A tall, thin building with some slight squarish projections at its higher levels seen from between some trees.', 'caption': '2013 street view to the southeast', 'building_type': '[[Condominium]]', 'structural_system': '[[Shear wall]]ed frame', 'landlord': '[[Consortium]] of [[creditor]]s', 'address': '23 [[22nd Street (Manhattan)|East 22nd Street]]', 'location_town': '[[Manhattan]], [[New York City]]', 'location_country': '[[United States]]', 'mapframe-wikidata': 'yes', 'coordinates': '{{coord|40.7406|-73.9880|format|=|dms|display|=|inline,title}}', 'start_date': '2006', 'topped_out_date': '2010', 'completion_date': '2010', 'inauguration_date': '2013', 'height': '{{convert|621|ft|m|sp|=|us}}', 'floor_count': '50 (91 units)', 'floor_area': '{{convert|16,763|sqm|abbr|=|on}}', 'architecture_firm': '[[CetraRuddy]]', 'other_designers': "[[Rem Koolhaas]]<br>[[Yabu Pushelberg]] ''(interiors)''", 'website': '[http://www.relatedsales.com/luxury-condominiums/nyc/one-madison One Madison]'}}]}
-{'index': 15233, 'score': 0.8471671342849731, 'url': 'https://upload.wikimedia.org/wikipedia/commons/7/7c/One_Madison.jpg', 'entities': [{'entity_name': 'One Madison', 'entity_attributes': {'name': 'One Madison', 'former_names': 'The Saya, One Madison Park', 'image': 'File:One Madison 2013 crop.jpg', 'image_alt': 'A tall, thin building with some slight squarish projections at its higher levels seen from between some trees.', 'caption': '2013 street view to the southeast', 'building_type': '[[Condominium]]', 'structural_system': '[[Shear wall]]ed frame', 'landlord': '[[Consortium]] of [[creditor]]s', 'address': '23 [[22nd Street (Manhattan)|East 22nd Street]]', 'location_town': '[[Manhattan]], [[New York City]]', 'location_country': '[[United States]]', 'mapframe-wikidata': 'yes', 'coordinates': '{{coord|40.7406|-73.9880|format|=|dms|display|=|inline,title}}', 'start_date': '2006', 'topped_out_date': '2010', 'completion_date': '2010', 'inauguration_date': '2013', 'height': '{{convert|621|ft|m|sp|=|us}}', 'floor_count': '50 (91 units)', 'floor_area': '{{convert|16,763|sqm|abbr|=|on}}', 'architecture_firm': '[[CetraRuddy]]', 'other_designers': "[[Rem Koolhaas]]<br>[[Yabu Pushelberg]] ''(interiors)''", 'website': '[http://www.relatedsales.com/luxury-condominiums/nyc/one-madison One Madison]'}}]}
-{'index': 24689, 'score': 0.8386403322219849, 'url': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/50_West_Street_April_2017.jpg', 'entities': [{'entity_name': '50 West Street', 'entity_attributes': {'name': '50 West Street', 'image': '50 West Street April 2017.jpg', 'caption': 'Seen from the [[West Street pedestrian bridges#Rector Street Bridge|Rector Street pedestrian bridge across West Street]] in April 2017.', 'location': '50 West Street', 'mapframe-wikidata': 'yes', 'coordinates': '{{coord|40.70801|-74.01505|region:US-NY|display|=|inline,title}}', 'status': 'Completed', 'start_date': 'Fall 2008', 'topped_out_date': 'October 23, 2016', 'completion_date': '2018', 'building_type': '{{unbulleted list|Residential|Retail}}', 'architectural': '{{convert|778|ft|m|0|abbr|=|on}}', 'tip': '{{convert|778|ft|m|0|abbr|=|on}}', 'floor_count': '65', 'cost': '$600 million', 'floor_area': '{{convert|53,883|m2|sqft|-2|abbr|=|on}}', 'architect': '[[Helmut Jahn|Murphy/Jahn Architects]]', 'structural_engineer': 'DeSimone Consulting Engineers', 'main_contractor': 'Hunter Roberts Construction Group', 'developer': 'Time Equities Inc.', 'groundbreaking_date': 'June 23, 2008', 'observatory': '{{convert|734|ft|m|0|abbr|=|on}}'}}]}
-{'index': 34449, 'score': 0.8354493379592896, 'url': 'https://upload.wikimedia.org/wikipedia/commons/3/31/Jenga_tower_%2836775634164%29.jpg', 'entities': [{'entity_name': '56 Leonard Street', 'entity_attributes': {'name': '56 Leonard Street', 'status': 'Complete', 'image': '56 Leonard Street (24249).jpg', 'caption': 'View from the [[Hudson River]], 2021', 'location': '[[Manhattan]], New York, U.S.', 'mapframe_wikidata': 'yes', 'coordinates': '{{coord|40.71767|-74.00637|region:US-NY_scale:5000|display|=|inline,title}}', 'start_date': 'Mid-2007', 'completion_date': '2017', 'architect': '[[Herzog & de Meuron]]<br/>[[Goldstein, Hill & West Architects]]', 'floor_area': '{{convert|500,005|sqft|m2|abbr|=|on}}', 'top_floor': '{{convert|796|ft|m|abbr|=|on}}', 'floor_count': '60', 'building_type': 'Residential condominium', 'architectural_style': '[[High-tech architecture|High-Tech]]', 'roof': '{{convert|821|ft|m|abbr|=|on}}', 'structural_engineer': '[[WSP Global]]', 'opening': '2017', 'developer': 'Alexico Group', 'website': '{{URL|https://56leonardtribeca.com/}}'}}]}
-{'index': 14788, 'score': 0.8338108062744141, 'url': 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Central_Park_Tower_2022.jpg', 'entities': [{'entity_name': 'Central Park Tower', 'entity_attributes': {'location': '225 West 57th Street, Manhattan, New York', 'building_type': 'Residential, Retail', 'architect': 'Adrian Smith + Gordon Gill Architecture', 'height_in_feet': '1550', 'completion_year': '2020'}}]}
-{'index': 9317, 'score': 0.8320404291152954, 'url': 'https://upload.wikimedia.org/wikipedia/commons/8/81/Central_Park_Tower_April_2021.jpg', 'entities': [{'entity_name': 'Central Park Tower', 'entity_attributes': {'location': '225 West 57th Street, Manhattan, New York', 'building_type': 'Residential, Retail', 'architect': 'Adrian Smith + Gordon Gill Architecture', 'height_in_feet': '1550', 'completion_year': '2020'}}]}
-{'index': 22106, 'score': 0.8295018672943115, 'url': 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Worldwide-plaza-facingeast-small.jpg', 'entities': [{'entity_name': 'One Worldwide Plaza', 'entity_attributes': {'name': 'One Worldwide Plaza', 'image': 'Wwp50roof.JPG', 'image_size': '250px', 'caption': 'The Worldwide Plaza complex in 2007. One Worldwide Plaza is in the left background, while Two Worldwide Plaza is in the center. The short roofs of Three Worldwide Plaza are visible at right (with [[1585 Broadway]] in the background).', 'location': '825 [[Eighth Avenue (Manhattan)|8th Avenue]]<br />[[Manhattan]], New York City', 'mapframe-wikidata': 'yes', 'coordinates': '{{Coord|40|45|44|N|73|59|13|W|region:US-NY_type:landmark|display|=|inline,title}}', 'start_date': 'November 12, 1986', 'topped_out_date': 'May 20, 1988', 'completion_date': 'June 1989', 'architect': '[[David Childs]] of [[Skidmore, Owings and Merrill]]', 'owner': 'New York REIT', 'floor_area': '{{cvt|1,706,187|sqft}}', 'floor_count': '50', 'building_type': '[[Office building]]', 'architectural_style': '[[Postmodern architecture|Postmodernism]]', 'roof': '{{cvt|778|ft}}', 'main_contractor': 'HRH Construction', 'developer': '[[William Zeckendorf Jr.]]'}}]}
-{'index': 20958, 'score': 0.8280225396156311, 'url': 'https://upload.wikimedia.org/wikipedia/commons/1/1d/125_Greenwich_St_from_Liberty_Park_2020_jeh.jpg', 'entities': [{'entity_name': '125 Greenwich Street', 'entity_attributes': {'alternative_names': '22 Thames Street', 'location_city': 'New York City', 'location_country': 'United States', 'architect': 'Rafael Viñoly', 'height_in_feet': '912'}}]}        
-{'index': 366, 'score': 0.8250119090080261, 'url': 'https://upload.wikimedia.org/wikipedia/commons/d/dd/Sutton_58_Aug_2021.jpg', 'entities': [{'entity_name': 'Sutton 58', 'entity_attributes': {'alternative_names': '3 Sutton Place', 'neighborhood': 'Sutton Place', 'building_type': 'Residential', 'location': '426–432 East 58th Street', 'completion_date': '2022'}}]}
+Generating responses: 9it [00:07,  1.21it/s][
+        [
+                {
+                        "index": 20217,
+                        "score": 0.7295057773590088,
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Mekupelets.jpg",
+                        "entities": [
+                                {
+                                        "entity_name": "Mekupelet",
+                                        "entity_attributes": {
+                                                "main_ingredients": "[[Milk chocolate]]",
+                                                "type": "[[Dessert bar]]",
+                                                "country": "[[Israel]]",
+                                                "summary": "Mekupelet (Hebrew: \u05de\u05e7\u05d5\u05e4\u05dc\u05ea) (sold in English-speaking markets as Chocolate Log) is a bar of thinly folded milk chocolateproduced in Israel since 1935 by Elite, now a subdivision of the Strauss Group. The Hebrew name means \"folded\". It is known for its crumbliness and thin flakes and has been compared to the British chocolate bar known as Cadbury Flake.\nMekupelet is exported to overseas markets. Mekupelet is also produced in a 'Mehadrin' version through the Magadim factory of the Strauss Group.",
+                                                "alternative_names": "Chocolate Log",
+                                                "year_of_production": "1935",
+                                                "manufacturer": "Elite, Strauss Group",
+                                                "notable_characteristics": "crumbliness, thin flakes"
+                                        }
+                                }
+                        ]
+                },
+                {
+                        "index": 5625,
+                        "score": 0.7173153162002563,
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/6/61/HK_TKO_%E5%B0%87%E8%BB%8D%E6%BE%B3_Tseung_Kwan_O_%E5%B0%9A%E5%BE%B7%E9%82%A8_Sheung_Tak_Estate_%E5%95%86%E5%A0%B4_TKO_SPOT_mall_shop_%E7%99%BE%E4%BD%B3%E8%B6%85%E5%B8%82_ParknShop_Supermarket_Almond_Roca_candy_February_2024_R12S_02.jpg",
+                        "entities": [
+                                {
+                                        "entity_name": "Almond Roca",
+                                        "entity_attributes": {
+                                                "main_ingredients": "[[Sugar]], [[almond]]s, [[butter]], [[vegetable oil]], [[chocolate]]",
+                                                "type": "Chocolate-covered [[toffee]]",
+                                                "creator": "Brown and Haley",
+                                                "country": "United States",
+                                                "summary": "Almond Roca is a brand of chocolate-covered, hard toffee with a coating of ground almonds. It is similar to chocolate-covered English toffee. The candy is manufactured by the Brown & Haley Co. of Tacoma, Washington, founded in 1912 by Harry Brown and J.C. Haley.",
+                                                "manufacturer": "Brown & Haley Co.",
+                                                "place_of_manufacture": "Tacoma, Washington",
+                                                "year_of_founding": "1912",
+                                                "founders": "Harry Brown, J.C. Haley",
+                                                "description": "chocolate-covered, hard toffee with ground almonds"
+                                        }
+                                }
+                        ]
+                },
+                {
+                        "index": 8628,
+                        "score": 0.6960030794143677,
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/1/14/Persian_ice_cream_fridge_at_Real_Produce%2C_Palo_Alto%2C_CA.jpg",
+                        "entities": [
+                                {
+                                        "entity_name": "Bastani",
+                                        "entity_attributes": {
+                                                "region": "{{IRN}}",
+                                                "alternate_names": "Persian ice cream, Saffron ice cream, Bastani",
+                                                "main_ingredients": "[[Milk]], [[cream]], [[sugar]], flavorings (e.g. fruit puree or nut paste)",
+                                                "type": "[[Ice cream]]",
+                                                "creator": "[[Persians]]",
+                                                "serving_temperature": "Cold",
+                                                "country": "{{IRN}} ([[Ancient Persia]])",
+                                                "summary": "Bastani (Persian: \u0628\u0633\u062a\u0646\u06cc), locally known as bastani sonnati (Persian: \u0628\u0633\u062a\u0646\u06cc \u0633\u0646\u062a\u06cc\"traditional ice cream\") or bastani sonnati zaferani (Persian: \u0628\u0633\u062a\u0646\u06cc \u0633\u0646\u062a\u06cc \u0632\u0639\u0641\u0631\u0627\u0646\u06cc \"traditional saffron ice cream\"), is an Iranian ice cream made from milk, yolk, sugar, rose water, saffron, vanilla, and pistachios. It is known widely as Persian ice cream. Bastani often contains flakes of frozen clotted cream. Sometimes, salep is included as an ingredient.\n\u0100b hav\u012bj bastani (Persian: \u0622\u0628 \u0647\u0648\u06cc\u062c \u0628\u0633\u062a\u0646\u06cc) is an ice cream float using carrot juice and occasionally, may be garnished with cinnamon, nutmeg, or other spices.",
+                                                "alternative_names": "Persian ice cream, bastani sonnati, bastani sonnati zaferani",
+                                                "place_of_origin": "Iran",
+                                                "type_of_dessert": "ice cream",
+                                                "optional_ingredients": "frozen clotted cream, salep"
+                                        }
+                                }
+                        ]
+                },
+                {
+                        "index": 9818,
+                        "score": 0.6937348246574402,
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Pelmeni%2C_Novosibirsk_02.jpg",
+                        "entities": [
+                                {
+                                        "entity_name": "Pelmeni",
+                                        "entity_attributes": {
+                                                "main_ingredients": "[[Dough]]: [[flour]], water, sometimes [[Egg (food)|eggs]]<br />Filling: [[Ground meat|minced meat]] ([[pork]], [[Lamb and mutton|lamb]], [[beef]], fish, or any other kind of meat) or mushrooms as well as salt, pepper and sometimes herbs and onions.",
+                                                "type": "[[Dumpling]]",
+                                                "country": "[[Russia]]",
+                                                "summary": "Pelmeni (Russian: \u043f\u0435\u043b\u044c\u043c\u0435\u043d\u0438, pronounced [p\u02b2\u026al\u02b2\u02c8m\u02b2en\u02b2\u026a]; sg. pelmen, \u043f\u0435\u043b\u044c\u043c\u0435\u043d\u044c, pronounced [p\u02b2\u026al\u02b2\u02c8m\u02b2en\u02b2]) are dumplings of Russian cuisine that consist of a filling wrapped in thin, unleavened dough. They are considered to be a national dish.\nPelmeni became a staple of Russian cuisine during the period of Russian expansion into the Ural Mountains and Siberia. Pelmeni also have deep roots in the traditions and folklore of the Komi region of northwest Russia and figure prominently in Komi cuisine. The name itself was borrowed from the language of the Komi-Permyaks.",
+                                                "type_of_dish": "dumplings",
+                                                "main_components": "filling, unleavened dough",
+                                                "region_of_significance": "Komi region, Ural Mountains, Siberia",
+                                                "language_of_origin": "Komi-Permyaks"
+                                        }
+                                }
+                        ]
+                },
+                {
+                        "index": 15525,
+                        "score": 0.6922891736030579,
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/9/9a/202312_Dodols_sold_in_a_market_in_Sri_Lanka.jpg",
+                        "entities": [
+                                {
+                                        "entity_name": "Dodol",
+                                        "entity_attributes": {
+                                                "region": "[[Java]]",
+                                                "main_ingredients": "[[Coconut milk]], [[jaggery]], [[rice flour]]",
+                                                "type": "Confectionery",
+                                                "country": "[[Indonesia]]",
+                                                "summary": "Dodol is a sweet toffee-like sugar palm-based confection commonly found in Southeast Asia and the Indian subcontinent. Originating from the culinary traditions of Indonesia, it is also popular in Malaysia, Singapore, Brunei, the Philippines, Southern India (Southern Coastal Tamil Nadu and Goa), Sri Lanka, Thailand, and Burma, where it is called mont kalama.It is made from coconut milk, jaggery, and rice flour, and is sticky, thick, and sweet.",
+                                                "place_of_origin": "Indonesia",
+                                                "regions_found": "Southeast Asia, Indian subcontinent",
+                                                "alternative_names": "mont kalama",
+                                                "texture": "sticky, thick, sweet"
+                                        }
+                                }
+                        ]
+                }
+        ]
+]
