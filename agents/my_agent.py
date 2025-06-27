@@ -149,25 +149,31 @@ class MyAgent(BaseAgent):
             if isinstance(image_info, list):
                 info_str = ""
                 for idx, info in enumerate(image_info, 1):
-                    info_text = "; ".join(f"{k.replace('_', ' ').capitalize()}: {v}" for k, v in info.items())
+                    # Try to generate a natural sentence for each entity
+                    info_text = f"{info.get('entity_name', '')}: "
+                    info_text += "; ".join(f"{k.replace('_', ' ')} is {v}" for k, v in info.items() if k != "entity_name")
                     info_str += f"Option {idx}: {info_text}\n"
                 prompt = (
-                    "You are a helpful assistant.\n"
-                    "You are given several pieces of information (options) about an image. "
-                    "Choose the single most relevant option to answer the user's question. "
-                    "Base your answer only on the chosen option. "
-                    "If none are relevant, say you don't know.\n\n"
-                    f"{info_str}"
-                    f"Question: {query}\n"
-                    "Answer it in a sentence as short and simple as possible without yapping. "
-                    "Answer:"
+                        "You are a helpful assistant.\n"
+                        "You are given several pieces of information (options) about an image. "
+                        "For each option, consider which field(s) best answer the user's question. "
+                        "Choose the single most relevant option and use only the most relevant field(s) from that option to answer. "
+                        "If the answer is not directly stated, try to infer it from the available fields. "
+                        "If none are relevant, say you don't know.\n\n"
+                        f"{info_str}"
+                        f"Question: {query}\n"
+                        "Answer in a sentence as short and simple as possible without yapping.\n"
+                        "Answer:"
                 )
             else:
                 # Fallback for single info dict
                 prompt = (
                     "You are a helpful assistant.\n"
-                    "Use the information below to answer the question as accurately as possible. "
-                    "If the information is not relevant, say you don't know.\n\n"
+                    "You are given several pieces of information (options) about an image. "
+                    "For each option, consider which field(s) best answer the user's question. "
+                    "Choose the single most relevant option and use only the most relevant field(s) from that option to answer. "
+                    "If the answer is not directly stated, try to infer it from the available fields. "
+                    "If none are relevant, say you don't know.\n\n"
                     f"Info: {json.dumps(image_info, ensure_ascii=False)}\n"
                     f"Question: {query}\n"
                     "Answer it in a sentence as short and simple as possible without yapping. "
