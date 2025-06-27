@@ -43,6 +43,7 @@ class MyAgent(BaseAgent):
     def preprocess_image_information(self, images_information):
         results = []
 
+        print(json.dumps(images_information, indent="\t"))
         for information in images_information:
             result = {}
             for output in information:
@@ -96,7 +97,6 @@ class MyAgent(BaseAgent):
                     Assistant: 
                     """
             prompts.append(prompt)
-            print(image_info)
         
         outputs = self.generator(prompts)
         responses = [output[0]["generated_text"].split("Assistant: ")[-1].strip() for output in outputs]

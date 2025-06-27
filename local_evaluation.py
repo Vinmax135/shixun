@@ -476,7 +476,7 @@ def main() -> None:
     parser.add_argument(
         "--num-conversations",
         type=int,
-        default=30,
+        default=10,
         help="Number of conversations to evaluate (default: -1). -1 evaluates all conversations, while a positive number evaluates that many conversations.",
     )
     parser.add_argument(
