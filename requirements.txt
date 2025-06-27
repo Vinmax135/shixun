@@ -3,7 +3,7 @@ dotenv
 torch==2.6
 torchvision==0.21.0
 transformers
-accelerate==0.26.0
+accelerate
 sentence-transformers
 pandas
 pydantic

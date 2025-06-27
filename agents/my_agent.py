@@ -9,7 +9,7 @@ from agents.base_agent import BaseAgent
 from cragmm_search.search import UnifiedSearchPipeline
 
 # Configurations Constants
-MODEL_NAME = "meta-llama/Llama-3.2-11B-Vision-Instruct"
+MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 1
 TOP_K = 3
 
