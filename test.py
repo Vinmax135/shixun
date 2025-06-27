@@ -15,14 +15,14 @@ search_pipeline = UnifiedSearchPipeline(
 outputs = search_pipeline(image, k=5)
 
 # -------- Preprocess each entity --------
-
-result = {}
+image_info = []
 for output in outputs:
     if not output["score"] > 0.85:
         continue
-
+    
     for entity in output["entities"]:
-        result["entity_name"] = entity["entity_name"]
+        entity_result = {} # Keep information of an entity
+        entity_result["entity_name"] = entity["entity_name"]
 
         for key, value in entity["entity_attributes"].items():
             # HTML Tags
@@ -42,6 +42,6 @@ for output in outputs:
             value = re.sub(r'\[\[([^\|\]]+)\|([^\]]+)\]\]', r' \2', value)
             value = re.sub(r'\[\[([^\]]+)\]\]', r' \1', value)
 
-            result[key] = value.strip()
+            entity_result[key] = value.strip()
 
-print(json.dumps(result, indent="\t"))
+        image_info.append(entity_result)
