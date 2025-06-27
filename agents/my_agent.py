@@ -81,6 +81,8 @@ class MyAgent(BaseAgent):
                     value = re.sub(r'\[\[([^\]]+)\]\]', r' \1', value)
                 
                     entity_info[key] = value
+
+                entities_info.append(entity_info)
             
             entities_string = []
             entity_string = ""
@@ -96,9 +98,6 @@ class MyAgent(BaseAgent):
                 
             scores = util.cos_sim(query_emb, entity_emb)[0]
             best = scores.argmax().item()
-            print(entities_info)
-            print(scores)
-            print(best)
             preprocessed_images_info.append(entities_info[best])
 
         return preprocessed_images_info
