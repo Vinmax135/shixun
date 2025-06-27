@@ -83,6 +83,7 @@ class MyAgent(BaseAgent):
                     entity_info[key] = value
 
                 entities_info.append(entity_info)
+            print(entities_info)
             
             entities_string = []
             entity_string = ""
