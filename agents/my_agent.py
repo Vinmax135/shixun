@@ -83,7 +83,6 @@ class MyAgent(BaseAgent):
                     entity_info[key] = value
 
                 entities_info.append(entity_info)
-            print(entities_info)
             
             entities_string = []
             entity_string = ""
@@ -95,7 +94,7 @@ class MyAgent(BaseAgent):
                 entities_string.append(entity_string)
                 
             query_emb = self.semantic_model.encode(queries[index], convert_to_tensor=True)
-            entity_emb = self.semantic_model.encode(entity_string, convert_to_tensor=True)
+            entity_emb = self.semantic_model.encode(entities_string, convert_to_tensor=True)
                 
             scores = util.cos_sim(query_emb, entity_emb)
             print(scores)
