@@ -96,17 +96,49 @@ class MyAgent(BaseAgent):
             # ✅ NEW: take top-k relevant entities and merge their info
             topk_indices = scores[0].topk(min(TOP_K, len(entities_info))).indices.tolist()
 
-            # Merge top-k entities
-            merged_info = {}
-            for i in topk_indices:
-                entity = entities_info[i]
+            topk_entities = [entities_info[i] for i in topk_indices]
+
+            # Convert entities to strings for embedding
+            entity_texts = []
+            for entity in topk_entities:
+                entity_string = f"name={entity['entity_name']}"
                 for key, value in entity.items():
-                    if key in merged_info:
-                        if value not in merged_info[key]:
-                            merged_info[key] += f"; {value}"  # avoid duplicate concat
-                    else:
-                        merged_info[key] = value
-            preprocessed_images_info.append(merged_info)
+                    if key != "entity_name":
+                        entity_string += f" {key}={value}"
+                entity_texts.append(entity_string)
+
+            entity_embs = self.semantic_model.encode(entity_texts, convert_to_tensor=True)
+            pairwise_scores = util.cos_sim(entity_embs, entity_embs)
+            threshold = 0.7
+
+            # Group similar entities
+            groups = []
+            used = set()
+            for i in range(len(topk_entities)):
+                if i in used:
+                    continue
+                group = [i]
+                used.add(i)
+                for j in range(i+1, len(topk_entities)):
+                    if j not in used and pairwise_scores[i, j] >= threshold:
+                        group.append(j)
+                        used.add(j)
+                groups.append(group)
+
+            for group in groups:
+                if len(group) == 1:
+                    preprocessed_images_info.append(topk_entities[group[0]])
+                else:
+                    merged_info = {}
+                    for idx in group:
+                        entity = topk_entities[idx]
+                        for key, value in entity.items():
+                            if key in merged_info:
+                                if value not in merged_info[key]:
+                                    merged_info[key] += f"; {value}"
+                            else:
+                                merged_info[key] = value
+                    preprocessed_images_info.append(merged_info)
 
         return preprocessed_images_info
 
@@ -114,14 +146,30 @@ class MyAgent(BaseAgent):
         prompts = []
 
         for image_info, query in zip(images_info, queries):
-            prompt = (
-                f"You are a helpful assistant. Answer the user's question based only on the info below. "
-                f"Answer it directly in just a sentence as simple and short as possible without yapping"
-                f"Use the information to answer the question as best as possible.'.\n\n"
-                f"Info: {json.dumps(image_info, ensure_ascii=False)}\n"
-                f"Question: {query}\n"
-                f"Answer:"
-            )
+            if isinstance(image_info, list):
+                info_str = ""
+                for idx, info in enumerate(image_info, 1):
+                    info_str += f"Option {idx}: {json.dumps(info, ensure_ascii=False)}\n"
+                prompt = (
+                    "You are a helpful assistant.\n"
+                    "You are given several pieces of information (options) about an image. "
+                    "Choose the single most relevant option to answer the user's question. "
+                    "Base your answer only on the chosen option. "
+                    "If none are relevant, say you don't know.\n\n"
+                    f"{info_str}"
+                    f"Question: {query}\n"
+                    "Answer:"
+                )
+            else:
+                # Fallback for single info dict
+                prompt = (
+                    "You are a helpful assistant.\n"
+                    "Use the information below to answer the question as accurately as possible. "
+                    "If the information is not relevant, say you don't know.\n\n"
+                    f"Info: {json.dumps(image_info, ensure_ascii=False)}\n"
+                    f"Question: {query}\n"
+                    "Answer:"
+                )
             prompts.append(prompt)
 
         outputs = self.generator(prompts)
