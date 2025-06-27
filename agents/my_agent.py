@@ -50,7 +50,7 @@ class MyAgent(BaseAgent):
                 for entity in output["entities"]:
                     result["entity_name"] = entity["entity_name"]
 
-                    if type(entity["entity_attributes"]) == None:
+                    if entity["entity_attributes"] == None:
                         continue
 
                     for key, value in entity["entity_attributes"].items():
