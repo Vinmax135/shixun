@@ -115,7 +115,9 @@ class MyAgent(BaseAgent):
         ) -> list[str]:
         
         images_information = self.get_batch_image_info(images)
+        print(images_information)
         images_information = self.preprocess_image_information(images_information)
+        print(images_information)
         
         responses = self.batch_generate(images_information, queries)
 
