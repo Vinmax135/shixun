@@ -51,7 +51,7 @@ class MyAgent(BaseAgent):
             entities_info = []
             for api_result in api_results:
                 entity_info = {}
-                entity = api_result["entities"]
+                entity = api_result["entities"][0]
                 entity_info["entity_name"] = entity["entity_name"]
 
                 if entity["entity_attributes"] == None:
