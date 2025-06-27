@@ -49,7 +49,7 @@ class MyAgent(BaseAgent):
             for output in information:
                 for entity in output["entities"]:
                     result["entity_name"] = entity["entity_name"]
-
+                    print(f"\033[31m{type(entity["entity_attributes"])}\033[0m")
                     for key, value in entity["entity_attributes"].items():
                         # HTML Tags
                         value = re.sub(r'<.*?>', '', value)
