@@ -14,5 +14,5 @@ search_pipeline = UnifiedSearchPipeline(
     image_hf_dataset_id="crag-mm-2025/image-search-index-validation"
 )
 
-test = agent(search_pipeline)
+test = agent.MyAgent(search_pipeline)
 print(test.batch_generate_response(["What is this?"], [image]))
