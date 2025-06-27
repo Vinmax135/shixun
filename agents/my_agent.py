@@ -51,36 +51,36 @@ class MyAgent(BaseAgent):
                 api_result = self.search_pipeline(image, k=count)[count-1]
 
                 entity_info = {}
-                for entity in api_result["entities"]:
-                    entity_info["entity_name"] = entity["entity_name"]
+                entity = api_result["entities"][0]
+                entity_info["entity_name"] = entity["entity_name"]
 
-                    if entity["entity_attributes"] == None:
-                        continue
+                if entity["entity_attributes"] == None:
+                    continue
 
-                    for key, value in entity["entity_attributes"].items():
-                        value = str(value)
+                for key, value in entity["entity_attributes"].items():
+                    value = str(value)
 
-                        # non ASCII char
-                        value = re.sub(r'[^\x00-\x7F]+', '', value)
-                        
-                        # HTML Tags
-                        value = re.sub(r'<.*?>', '', value)
+                    # non ASCII char
+                    value = re.sub(r'[^\x00-\x7F]+', '', value)
 
-                        # Whitespace Char
-                        value = re.sub(r'[\n\t\r]', '', value).strip()
+                    # HTML Tags
+                    value = re.sub(r'<.*?>', '', value)
 
-                        # Wikipedia Template
-                        value = re.sub(
-                            r'\{\{([^\{\}]+)\}\}',
-                            lambda m: ' '.join([p for p in m.group(1).split('|')[1:] if '=' not in p]),
-                            value
-                        )
+                    # Whitespace Char
+                    value = re.sub(r'[\n\t\r]', '', value).strip()
 
-                        # Wikipedia Links
-                        value = re.sub(r'\[\[([^\|\]]+)\|([^\]]+)\]\]', r' \2', value)
-                        value = re.sub(r'\[\[([^\]]+)\]\]', r' \1', value)
-                    
-                        entity_info[key] = value
+                    # Wikipedia Template
+                    value = re.sub(
+                        r'\{\{([^\{\}]+)\}\}',
+                        lambda m: ' '.join([p for p in m.group(1).split('|')[1:] if '=' not in p]),
+                        value
+                    )
+
+                    # Wikipedia Links
+                    value = re.sub(r'\[\[([^\|\]]+)\|([^\]]+)\]\]', r' \2', value)
+                    value = re.sub(r'\[\[([^\]]+)\]\]', r' \1', value)
+                
+                    entity_info[key] = value
                 
                 entity_string = f"name={entity['entity_name']}"
                 for key, value in entity.items():
