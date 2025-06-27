@@ -146,8 +146,9 @@ class MyAgent(BaseAgent):
         prompts = []
 
         for image_info in images_info:
+            print(image_info)
             prompt = (
-                "Summarize the following information into a concise paragraph:\n"
+                "Summarize the following information into a paragraph:\n"
                 f"{json.dumps(image_info, ensure_ascii=False)}\n"
                 "Summary:"
             )
