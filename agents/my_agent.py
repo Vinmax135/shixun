@@ -96,6 +96,9 @@ class MyAgent(BaseAgent):
                 
             scores = util.cos_sim(query_emb, entity_emb)[0]
             best = scores.argmax().item()
+            print(entities_info)
+            print(scores)
+            print(best)
             preprocessed_images_info.append(entities_info[best])
 
         return preprocessed_images_info
