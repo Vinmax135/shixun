@@ -32,7 +32,7 @@ class MyAgent(BaseAgent):
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            max_new_tokens=16,
+            max_new_tokens=32,
             do_sample=False
         )
         self.semantic_model = SentenceTransformer('multi-qa-mpnet-base-dot-v1')  # ✅ stronger model
@@ -142,43 +142,29 @@ class MyAgent(BaseAgent):
 
         return preprocessed_images_info
 
+    def summarize_information(self, images_info):
+        prompts = []
+
+        for image_info in images_info:
+            prompt = (
+                "Summarize the following information into a concise paragraph:\n"
+                f"{json.dumps(image_info, ensure_ascii=False)}\n"
+                "Summary:"
+            )
+            prompts.append(prompt)
+
+        output = self.generator(prompts)
+        summary = [output[0]["generated_text"].split("Summary:")[-1].strip() for each in output]
+        return summary
+
     def generate_answer(self, images_info, queries) -> list[str]:
         prompts = []
-        # Only keep the most relevant fields
-        keys_to_keep = ["entity_name", "summary", "country", "type", "main_ingredients", "region", "alternative_names"]
 
-        for image_info, query in zip(images_info, queries):
-            if isinstance(image_info, list):
-                info_str = ""
-                for idx, info in enumerate(image_info, 1):
-                    # Format as natural language, only relevant fields
-                    info_text = ". ".join(
-                        f"{k.replace('_', ' ').capitalize()}: {v}"
-                        for k, v in info.items() if k in keys_to_keep and v
-                    )
-                    info_str += f"Option {idx}: {info_text}\n"
-                prompt = (
+        for info_text, query in zip(images_info, queries):
+            prompt = (
                     "You are a helpful assistant.\n"
-                    "You are given several options about an image. "
-                    "For each option, consider which field(s) best answer the user's question. "
-                    "Choose the single most relevant option and use only the most relevant field(s) from that option to answer. "
-                    "If the answer is not directly stated, try to infer it from the available fields. "
-                    "If none are relevant, say you don't know.\n\n"
-                    f"{info_str}"
-                    f"Question: {query}\n"
-                    "Answer as accurately and concisely as possible.\n"
-                    "Answer:"
-                )
-            else:
-                # Fallback for single info dict
-                info_text = ". ".join(
-                    f"{k.replace('_', ' ').capitalize()}: {v}"
-                    for k, v in image_info.items() if k in keys_to_keep and v
-                )
-                prompt = (
-                    "You are a helpful assistant.\n"
-                    "You are given information about an image. "
-                    "Use the most relevant field(s) to answer the user's question. "
+                    "Given a paragraph of information about an image. "
+                    "Use the information to answer the user's question. "
                     "If the answer is not directly stated, try to infer it from the available fields. "
                     "If none are relevant, say you don't know.\n\n"
                     f"Info: {info_text}\n"
@@ -203,5 +189,6 @@ class MyAgent(BaseAgent):
         message_histories: list[list[dict[str, Any]]] = None,
     ) -> list[str]:
         images_info = self.get_image_information(images, queries)
-        responses = self.generate_answer(images_info, queries)
+        summarization = self.summarize_information(images_info)
+        responses = self.generate_answer(summarization, queries)
         return responses
