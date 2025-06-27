@@ -47,7 +47,7 @@ class MyAgent(BaseAgent):
 
         # Get And Preprocess Info
         for image in images:
-            api_result = self.search_pipeline(image, k=SEARCH_RESULTS)
+            api_result = self.search_pipeline(image, k=SEARCH_RESULTS)[0]
 
             entities_info = []
             for entity in api_result["entities"]:
