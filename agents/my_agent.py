@@ -32,7 +32,7 @@ class MyAgent(BaseAgent):
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            max_new_tokens=32,
+            max_new_tokens=512,
             do_sample=False
         )
         self.semantic_model = SentenceTransformer('multi-qa-mpnet-base-dot-v1')  # ✅ stronger model
