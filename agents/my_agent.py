@@ -99,9 +99,11 @@ class MyAgent(BaseAgent):
                     Assistant: 
                     """
             prompts.append(prompt)
+            print(image_info)
         
         outputs = self.generator(prompts)
         responses = [output[0]["generated_text"].split("Assistant: ")[-1].strip() for output in outputs]
+        print(responses)
         
         return responses
 
