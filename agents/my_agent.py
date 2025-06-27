@@ -46,12 +46,12 @@ class MyAgent(BaseAgent):
 
         # Get And Preprocess Info
         for index, image in enumerate(images):
-            count = 1
-            while True:
-                api_result = self.search_pipeline(image, k=count)[count-1]
+            api_results = self.search_pipeline(image, k=10)
 
+            entities_info = []
+            for api_result in api_results:
                 entity_info = {}
-                entity = api_result["entities"][0]
+                entity = api_result["entities"]
                 entity_info["entity_name"] = entity["entity_name"]
 
                 if entity["entity_attributes"] == None:
@@ -81,19 +81,22 @@ class MyAgent(BaseAgent):
                     value = re.sub(r'\[\[([^\]]+)\]\]', r' \1', value)
                 
                     entity_info[key] = value
-                
-                entity_string = f"name={entity['entity_name']}"
-                for key, value in entity.items():
+            
+            entities_string = []
+
+            for entity_info in entities_info:
+                entity_string = f"name={entity_info['entity_name']}"
+                for key, value in entity_info.items():
                     if key != "entity_name":
                         entity_string += f" {key}={value}"
+                entities_string.append(entity_string)
                 
-                query_emb = self.semantic_model.encode(queries[index], convert_to_tensor=True)
-                entity_emb = self.semantic_model.encode(entity_string, convert_to_tensor=True)
+            query_emb = self.semantic_model.encode(queries[index], convert_to_tensor=True)
+            entity_emb = self.semantic_model.encode(entity_string, convert_to_tensor=True)
                 
-                scores = util.cos_sim(query_emb, entity_emb)[0]
-                if scores >= 0.7:
-                    preprocessed_images_info.append(entity_info)
-                    break
+            scores = util.cos_sim(query_emb, entity_emb)[0]
+            best = scores.argmax().items()
+            preprocessed_images_info.append(entities_info[best])
 
         return preprocessed_images_info
 
