@@ -116,6 +116,7 @@ class MyAgent(BaseAgent):
         for image_info, query in zip(images_info, queries):
             prompt = (
                 f"You are a helpful assistant. Answer the user's question based only on the info below. "
+                f"Answer it in just a sentence"
                 f"Use the information to answer the question as best as possible.'.\n\n"
                 f"Info: {json.dumps(image_info, ensure_ascii=False)}\n"
                 f"Question: {query}\n"
