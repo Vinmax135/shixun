@@ -1,6 +1,7 @@
 import json
 import re
 
+import agents.my_agent as agent
 from cragmm_search.search import UnifiedSearchPipeline
 from crag_image_loader import ImageLoader
 
@@ -13,6 +14,4 @@ search_pipeline = UnifiedSearchPipeline(
     image_hf_dataset_id="crag-mm-2025/image-search-index-validation"
 )
 
-for i in range(5):
-    output = search_pipeline(image, k=1)
-    print(output)
+print(agent(search_pipeline).batch_generate_response(["What is this?"], [image]))
