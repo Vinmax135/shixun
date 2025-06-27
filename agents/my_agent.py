@@ -144,39 +144,46 @@ class MyAgent(BaseAgent):
 
     def generate_answer(self, images_info, queries) -> list[str]:
         prompts = []
+        # Only keep the most relevant fields
+        keys_to_keep = ["entity_name", "summary", "country", "type", "main_ingredients", "region", "alternative_names"]
 
         for image_info, query in zip(images_info, queries):
             if isinstance(image_info, list):
                 info_str = ""
                 for idx, info in enumerate(image_info, 1):
-                    # Try to generate a natural sentence for each entity
-                    info_text = f"{info.get('entity_name', '')}: "
-                    info_text += "; ".join(f"{k.replace('_', ' ')} is {v}" for k, v in info.items() if k != "entity_name")
+                    # Format as natural language, only relevant fields
+                    info_text = ". ".join(
+                        f"{k.replace('_', ' ').capitalize()}: {v}"
+                        for k, v in info.items() if k in keys_to_keep and v
+                    )
                     info_str += f"Option {idx}: {info_text}\n"
                 prompt = (
-                        "You are a helpful assistant.\n"
-                        "You are given several pieces of information (options) about an image. "
-                        "For each option, consider which field(s) best answer the user's question. "
-                        "Choose the single most relevant option and use only the most relevant field(s) from that option to answer. "
-                        "If the answer is not directly stated, try to infer it from the available fields. "
-                        "If none are relevant, say you don't know.\n\n"
-                        f"{info_str}"
-                        f"Question: {query}\n"
-                        "Answer in a sentence as short and simple as possible without yapping.\n"
-                        "Answer:"
-                )
-            else:
-                # Fallback for single info dict
-                prompt = (
                     "You are a helpful assistant.\n"
-                    "You are given several pieces of information (options) about an image. "
+                    "You are given several options about an image. "
                     "For each option, consider which field(s) best answer the user's question. "
                     "Choose the single most relevant option and use only the most relevant field(s) from that option to answer. "
                     "If the answer is not directly stated, try to infer it from the available fields. "
                     "If none are relevant, say you don't know.\n\n"
-                    f"Info: {json.dumps(image_info, ensure_ascii=False)}\n"
+                    f"{info_str}"
                     f"Question: {query}\n"
-                    "Answer it in a sentence as short and simple as possible without yapping. "
+                    "Answer as accurately and concisely as possible.\n"
+                    "Answer:"
+                )
+            else:
+                # Fallback for single info dict
+                info_text = ". ".join(
+                    f"{k.replace('_', ' ').capitalize()}: {v}"
+                    for k, v in image_info.items() if k in keys_to_keep and v
+                )
+                prompt = (
+                    "You are a helpful assistant.\n"
+                    "You are given information about an image. "
+                    "Use the most relevant field(s) to answer the user's question. "
+                    "If the answer is not directly stated, try to infer it from the available fields. "
+                    "If none are relevant, say you don't know.\n\n"
+                    f"Info: {info_text}\n"
+                    f"Question: {query}\n"
+                    "Answer as accurately and concisely as possible.\n"
                     "Answer:"
                 )
             prompts.append(prompt)
