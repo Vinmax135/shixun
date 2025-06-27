@@ -113,7 +113,7 @@ class MyAgent(BaseAgent):
                     keep the answers as short and simple as possible, if you dont know say I don't know.
 
                     Information:
-                    {json.dumps(image_info, ensure_ascii=False, indent="\t")}
+                    {json.dumps(image_info, ensure_ascii=False, indent='\t')}
 
                     User Question:
                     {query}
