@@ -10,7 +10,7 @@ from cragmm_search.search import UnifiedSearchPipeline
 # Configurations Constants
 MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 1
-SEARCH_RESULTS = 2
+SEARCH_RESULTS = 5
 
 class MyAgent(BaseAgent):
     def __init__(self, search_pipeline: UnifiedSearchPipeline):
@@ -46,9 +46,6 @@ class MyAgent(BaseAgent):
         for information in images_information:
             result = {}
             for output in information:
-                if not output["score"] > 0.85:
-                    continue
-
                 for entity in output["entities"]:
                     result["entity_name"] = entity["entity_name"]
 
@@ -115,7 +112,6 @@ class MyAgent(BaseAgent):
         ) -> list[str]:
         
         images_information = self.get_batch_image_info(images)
-        print(images_information)
         images_information = self.preprocess_image_information(images_information)
         print(images_information)
         
