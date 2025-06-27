@@ -15,4 +15,4 @@ search_pipeline = UnifiedSearchPipeline(
 )
 
 test = agent.MyAgent(search_pipeline)
-print(test.batch_generate_response(["What is this?"], [image]))
+print(test.batch_generate_response(["Where and when is it originated from?"], [image]))
