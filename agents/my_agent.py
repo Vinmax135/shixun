@@ -54,6 +54,8 @@ class MyAgent(BaseAgent):
                         continue
 
                     for key, value in entity["entity_attributes"].items():
+                        value = str(value)
+
                         # HTML Tags
                         value = re.sub(r'<.*?>', '', value)
 
