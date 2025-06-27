@@ -133,7 +133,7 @@ class MyAgent(BaseAgent):
         message_histories: list[list[dict[str, Any]]] = None,
         ) -> list[str]:
         
-        images_info = self.get_image_information(images)
+        images_info = self.get_image_information(images, queries)
         
         responses = self.generate_answer(images_info, queries)
 
