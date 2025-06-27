@@ -169,6 +169,7 @@ class MyAgent(BaseAgent):
                     "If the information is not relevant, say you don't know.\n\n"
                     f"Info: {json.dumps(image_info, ensure_ascii=False)}\n"
                     f"Question: {query}\n"
+                    "Answer it in a sentence as short and simple as possible without yapping. "
                     "Answer:"
                 )
             prompts.append(prompt)
