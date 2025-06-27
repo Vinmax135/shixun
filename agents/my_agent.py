@@ -83,7 +83,7 @@ class MyAgent(BaseAgent):
                     entity_info[key] = value
             
             entities_string = []
-
+            entity_string = ""
             for entity_info in entities_info:
                 entity_string = f"name={entity_info['entity_name']}"
                 for key, value in entity_info.items():
