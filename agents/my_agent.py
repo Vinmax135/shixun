@@ -126,7 +126,7 @@ class MyAgent(BaseAgent):
         responses = [output[0]["generated_text"].split("Assistant: ")[-1].strip() for output in outputs]
         
         for output in outputs:
-            print(output.strip(), end="\n\n")
+            print(output[0]["generated_text"].strip(), end="\n\n")
         
         return responses
 
