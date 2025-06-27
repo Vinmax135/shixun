@@ -97,7 +97,6 @@ class MyAgent(BaseAgent):
             entity_emb = self.semantic_model.encode(entities_string, convert_to_tensor=True)
                 
             scores = util.cos_sim(query_emb, entity_emb)
-            print(scores)
             best = scores.argmax().item()
             preprocessed_images_info.append(entities_info[best])
 
@@ -135,7 +134,7 @@ class MyAgent(BaseAgent):
         images: list[Image.Image],
         message_histories: list[list[dict[str, Any]]] = None,
         ) -> list[str]:
-        
+        print(images)
         images_info = self.get_image_information(images, queries)
         
         responses = self.generate_answer(images_info, queries)
