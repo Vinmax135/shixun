@@ -23,6 +23,10 @@ boxes, logits, phrases = predict(
 
 annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
 
+print(boxes)
+print("\n\n")
+print("logits")
+
 print("done")
 plt.imshow(annotated_frame)
 plt.axis('off')
