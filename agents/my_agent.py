@@ -1,21 +1,15 @@
 import torch
 import re
-import numpy as np
-from PIL import Image
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM, AutoProcessor, AutoModelForZeroShotObjectDetection
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer, util
-from segment_anything import sam_model_registry, SamPredictor
-
+from groundingdino.util.inference import load_model, predict
 from agents.base_agent import BaseAgent
 
 # Constants
-EXTRACTOR_MODEL_NAME = "en_core_web_sm"
-VISUAL_MODEL_NAME = "IDEA-Research/grounding-dino-base"
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
-SAM_CHECKPOINT = "./segment-anything/sam_vit_h_4b8939.pth"
-SAM_MODEL_TYPE = "vit_h"
 BATCH_SIZE = 1
-TEXT_THRESHOLD = 0.5
+BOX_THRESHOLD = 0.35
+TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 10
 TOP_K = 3
 
@@ -24,13 +18,9 @@ class MyAgent(BaseAgent):
         super().__init__(search_pipeline)
         
         # Load Visual Model
-        self.visual_processor = AutoProcessor.from_pretrained(VISUAL_MODEL_NAME)
-        self.visual_model = AutoModelForZeroShotObjectDetection.from_pretrained(VISUAL_MODEL_NAME).to("cuda")
-
-        # SAM Model
-        sam = sam_model_registry[SAM_MODEL_TYPE](checkpoint=SAM_CHECKPOINT)
-        sam.to("cuda")
-        self.sam_predictor = SamPredictor(sam)
+        config_path = "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+        weight_path = "../GroundingDINO/groundingdino_swint_ogc.pth"
+        self.visual_model = load_model(config_path, weight_path)
 
         # Load LLM
         offload_folder = "./offload_myagent"
@@ -60,53 +50,13 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
-        inputs = self.visual_processor(images=image, text="tree.", return_tensors="pt").to(self.visual_model.device)
-        with torch.no_grad():
-            outputs = self.visual_model(**inputs)
-
-        logits = outputs.logits
-        boxes = outputs.pred_boxes
-        scores = torch.sigmoid(logits[0])
-        max_scores, _ = scores.max(dim=1)
-        keep = max_scores > TEXT_THRESHOLD
-
-        if not keep.any():
-            print("❗No object matched the query. Returning full image.")
-            return image
-
-        kept_boxes = boxes[0][keep].cpu().numpy()
-        w, h = image.size
-        print("🔍 Grounding DINO kept boxes (pixel coordinates):")
-        for i, box in enumerate(kept_boxes):
-            x1, y1, x2, y2 = [int(box[j] * (w if j % 2 == 0 else h)) for j in range(4)]
-            x1, x2 = sorted((max(0, x1), min(w, x2)))
-            y1, y2 = sorted((max(0, y1), min(h, y2)))
-            print(f"  Box {i}: x1={x1}, y1={y1}, x2={x2}, y2={y2}")
-
-        # Choose the largest box by area
-        areas = (kept_boxes[:,2] - kept_boxes[:,0]) * (kept_boxes[:,3] - kept_boxes[:,1])
-        best_idx = int(np.argmax(areas))
-        box_norm = kept_boxes[best_idx]
-
-        # Convert normalized box to pixel coords
-        w, h = image.size
-        x1, y1, x2, y2 = [int(box_norm[i] * (w if i%2==0 else h)) for i in range(4)]
-        x1, x2 = sorted((max(0, x1), min(w, x2)))
-        y1, y2 = sorted((max(0, y1), min(h, y2)))
-
-        # Step 2: SAM for fine mask
-        image_np = np.array(image)
-        self.sam_predictor.set_image(image_np)
-        masks, _, _ = self.sam_predictor.predict(
-            box=np.array([x1, y1, x2, y2]),
-            multimask_output=False
+        boxes, logits, phrases = predict(
+            model=self.visual_model,
+            image=image,
+            caption=query,
+            BOX_THRESHOLD=BOX_THRESHOLD,
+            TEXT_THRESHOLD=TEXT_THRESHOLD
         )
-
-        mask = masks[0]
-        masked_img = image_np.copy()
-        masked_img[~mask] = 0
-
-        return Image.fromarray(masked_img)
 
     def extract_object(self, query):
         prompt = (
@@ -119,7 +69,7 @@ class MyAgent(BaseAgent):
         result = output.split("Objects:")[-1].strip()
 
         # Optionally format result as 'x. y. z.'
-        result = result.replace(",", ".").replace("..", ".").strip()
+        result = result.replace("..", ".").strip()
         if not result.endswith("."):
             result += "."
 

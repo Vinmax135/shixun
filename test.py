@@ -1,18 +1,28 @@
-import json
-import re
+query = input()
 
-from PIL import Image
-import agents.my_agent as agent
-from cragmm_search.search import UnifiedSearchPipeline
+from groundingdino.util.inference import load_model, load_image, predict, annotate
+import matplotlib.pyplot as plt
 
-image = Image.open("./pre.png")
+BOX_THRESHOLD = 0.35
+TEXT_THRESHOLD = 0.25
 
-search_pipeline = UnifiedSearchPipeline(
-    text_model_name=None,
-    image_model_name="openai/clip-vit-large-patch14-336",
-    web_hf_dataset_id=None,
-    image_hf_dataset_id="crag-mm-2025/image-search-index-validation"
-)
+config_path = "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+weight_path = "../GroundingDINO/groundingdino_swint_ogc.pth"
 
-test = agent.MyAgent(search_pipeline)
-print(test.batch_generate_response(["What is the cost of the scooter?"], [image]))
+model = load_model(config_path, weight_path)
+
+image_source, image = load_image("./pre.png")
+
+boxes, logits, phrases = predict(
+            model=model,
+            image=image,
+            caption=query,
+            BOX_THRESHOLD=BOX_THRESHOLD,
+            TEXT_THRESHOLD=TEXT_THRESHOLD
+        )
+
+annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
+
+plt.imshow(annotated_frame)
+plt.axis('off')
+plt.show()
