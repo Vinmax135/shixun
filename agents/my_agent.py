@@ -60,7 +60,7 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
-        inputs = self.visual_processor(images=image, text="scooter.", return_tensors="pt").to(self.visual_model.device)
+        inputs = self.visual_processor(images=image, text="tree.", return_tensors="pt").to(self.visual_model.device)
         with torch.no_grad():
             outputs = self.visual_model(**inputs)
 
