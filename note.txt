@@ -27,7 +27,7 @@ You are a helpful assistant which answers user question based on the given infor
       "population_total": "47,844",
       "population_as_of": "2010",
       "population_density_sq_mi": "auto",
-      "demographics_type1": "Ethnicity",
+      "demographics_type1": "Ethncity",
       "demographics1_title1": "Asian",
       "demographics1_info1": "63.9%",
       "demographics1_title2": "White",
