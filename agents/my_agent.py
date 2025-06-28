@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import re
 import json
+import spacy
 from PIL import Image
 from torchvision.transforms import ToTensor
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM, AutoProcessor, AutoModelForZeroShotObjectDetection
@@ -11,6 +12,7 @@ from sentence_transformers import SentenceTransformer, util
 from agents.base_agent import BaseAgent
 
 # Constants
+EXTRACTOR_MODEL_NAME = "en_core_web_sm"
 VISUAL_MODEL_NAME = "IDEA-Research/grounding-dino-base"
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 1
@@ -26,6 +28,9 @@ class MyAgent(BaseAgent):
         # Load Visual Model
         self.visual_processor = AutoProcessor.from_pretrained(VISUAL_MODEL_NAME)
         self.visual_model = AutoModelForZeroShotObjectDetection.from_pretrained(VISUAL_MODEL_NAME).to("cuda")
+
+        # Object Extract
+        self.object_extractor = spacy.load(EXTRACTOR_MODEL_NAME)
 
         # Load LLM
         offload_folder = "./offload_myagent"
@@ -89,6 +94,19 @@ class MyAgent(BaseAgent):
 
         return image.crop((x1, y1, x2, y2))
 
+    def extract_object(self, query):
+        doc = self.object_extractor(query)
+        objects = []
+
+        for token in doc:
+            if token.dep_ in ("nsubj", "dobj", "pobj", "attr") and token.pos_ == "NOUN":
+                chunk = [w.text for w in token.lefts if w.dep_ == "amod"]
+                chunk.append(token.text)
+                phrase = " ".join(chunk)
+                objects.append(phrase)
+
+        return ". ".join(objects) + "." if objects else ""
+
     def clean_metadata(self, raw_data):
         cleaned = {}
         ignored_keys = [
@@ -150,7 +168,7 @@ class MyAgent(BaseAgent):
 
         for query, image in zip(queries, images):
             image.save("pre.png")
-            image = self.crop_images(image, query)
+            image = self.crop_images(image, self.extract_object(query))
             image.save("post.png")
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
             
