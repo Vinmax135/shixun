@@ -23,9 +23,17 @@ boxes, logits, phrases = predict(
 
 annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
 
-print(boxes)
-print("\n\n")
-print("logits")
+W, H = image.size
+boxes_px = boxes.copy()
+boxes_px[:, 0] *= W  # x_center
+boxes_px[:, 1] *= H  # y_center
+boxes_px[:, 2] *= W  # width
+boxes_px[:, 3] *= H  # height
+
+x0 = boxes_px[:, 0] - boxes_px[:, 2] / 2
+y0 = boxes_px[:, 1] - boxes_px[:, 3] / 2
+x1 = boxes_px[:, 0] + boxes_px[:, 2] / 2
+y1 = boxes_px[:, 1] + boxes_px[:, 3] / 2
 
 print("done")
 plt.imshow(annotated_frame)
