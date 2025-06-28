@@ -1,7 +1,10 @@
 import torch
 import re
+import numpy as np
+from PIL import Image
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM, AutoProcessor, AutoModelForZeroShotObjectDetection
 from sentence_transformers import SentenceTransformer, util
+from segment_anything import sam_model_registry, SamPredictor
 
 from agents.base_agent import BaseAgent
 
@@ -9,6 +12,8 @@ from agents.base_agent import BaseAgent
 EXTRACTOR_MODEL_NAME = "en_core_web_sm"
 VISUAL_MODEL_NAME = "IDEA-Research/grounding-dino-base"
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
+SAM_CHECKPOINT = "path/to/sam_vit_h_4b8939.pth"
+SAM_MODEL_TYPE = "vit_h"
 BATCH_SIZE = 1
 TEXT_THRESHOLD = 0.5
 SEARCH_COUNT = 10
@@ -21,6 +26,11 @@ class MyAgent(BaseAgent):
         # Load Visual Model
         self.visual_processor = AutoProcessor.from_pretrained(VISUAL_MODEL_NAME)
         self.visual_model = AutoModelForZeroShotObjectDetection.from_pretrained(VISUAL_MODEL_NAME).to("cuda")
+
+        # SAM Model
+        sam = sam_model_registry[SAM_MODEL_TYPE](checkpoint=SAM_CHECKPOINT)
+        sam.to("cuda")
+        self.sam_predictor = SamPredictor(sam)
 
         # Load LLM
         offload_folder = "./offload_myagent"
@@ -50,41 +60,46 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
-        inputs = self.visual_processor(images=image, text="red electric scooter.", return_tensors="pt").to(self.visual_model.device)
-
+        inputs = self.visual_processor(images=image, text="scooter.", return_tensors="pt").to(self.visual_model.device)
         with torch.no_grad():
             outputs = self.visual_model(**inputs)
 
         logits = outputs.logits
         boxes = outputs.pred_boxes
-
         scores = torch.sigmoid(logits[0])
         max_scores, _ = scores.max(dim=1)
-
         keep = max_scores > TEXT_THRESHOLD
+
         if not keep.any():
             print("❗No object matched the query. Returning full image.")
             return image
 
-        kept_boxes = boxes[0][keep]
-        box = kept_boxes[0].cpu().numpy()
+        kept_boxes = boxes[0][keep].cpu().numpy()
+        # Choose the largest box by area
+        areas = (kept_boxes[:,2] - kept_boxes[:,0]) * (kept_boxes[:,3] - kept_boxes[:,1])
+        best_idx = int(np.argmax(areas))
+        box_norm = kept_boxes[best_idx]
 
+        # Convert normalized box to pixel coords
         w, h = image.size
-        x1 = max(int(box[0] * w), 0)
-        y1 = max(int(box[1] * h), 0)
-        x2 = min(int(box[2] * w), w)
-        y2 = min(int(box[3] * h), h)
+        x1, y1, x2, y2 = [int(box_norm[i] * (w if i%2==0 else h)) for i in range(4)]
+        x1, x2 = sorted((max(0, x1), min(w, x2)))
+        y1, y2 = sorted((max(0, y1), min(h, y2)))
 
-        x1, x2 = sorted([max(0, x1), min(w, x2)])
-        y1, y2 = sorted([max(0, y1), min(h, y2)])
+        # Step 2: SAM for fine mask
+        image_np = np.array(image)
+        self.sam_predictor.set_image(image_np)
+        masks, _, _ = self.sam_predictor.predict(
+            box=np.array([x1, y1, x2, y2]),
+            box_format="xyxy",
+            multimask_output=False
+        )
 
-        print(f"\n\n{w} {h} {x1} {y1} {x2} {y2}\n\n")
+        mask = masks[0]
+        masked_img = image_np.copy()
+        masked_img[~mask] = 0
 
-        if x2 <= x1 or y2 <= y1:
-            print("❗Box collapsed after sorting. Returning full image.")
-            return image
-
-        return image.crop((x1, y1, x2, y2))
+        return Image.fromarray(masked_img)
 
     def extract_object(self, query):
         prompt = (
