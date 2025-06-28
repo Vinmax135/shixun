@@ -4,9 +4,8 @@ import re
 from PIL import Image
 import agents.my_agent as agent
 from cragmm_search.search import UnifiedSearchPipeline
-from crag_image_loader import ImageLoader
 
-image = Image.open("./image.png")
+image = Image.open("./pre.png")
 
 search_pipeline = UnifiedSearchPipeline(
     text_model_name=None,
@@ -16,4 +15,4 @@ search_pipeline = UnifiedSearchPipeline(
 )
 
 test = agent.MyAgent(search_pipeline)
-print(test.batch_generate_response(["What is the cost of the bike?"], [image]))
+print(test.batch_generate_response(["What is the cost of the scooter?"], [image]))

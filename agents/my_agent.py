@@ -167,20 +167,16 @@ class MyAgent(BaseAgent):
         prompts = []
 
         for query, image in zip(queries, images):
-            image.save("pre.png")
+            print(self.extract_object(query))
             image = self.crop_images(image, self.extract_object(query))
-            image.save("post.png")
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
-            
-            print(image_datas)
+
             for index, each_data in enumerate(image_datas):
                 image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
             
-            print(image_datas)
             topk_datas = "; ".join(self.select_topk_datas(image_datas, query))
 
             print(topk_datas)
-
             prompt = (
                  "You are a helpful assistant which generates answer to the user question based on given information: "
                 f"{topk_datas}"
