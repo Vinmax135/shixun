@@ -87,8 +87,6 @@ class MyAgent(BaseAgent):
             print("❗Box collapsed after sorting. Returning full image.")
             return image
 
-        print(f"{w} {h} {x1} {y1} {x2} {y2}")
-
         return image.crop((x1, y1, x2, y2))
 
     def clean_metadata(self, raw_data):
@@ -154,24 +152,29 @@ class MyAgent(BaseAgent):
             image = self.crop_images(image, query)
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
             
+            print(image_datas)
             for index, each_data in enumerate(image_datas):
                 image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
             
+            print(image_datas)
             topk_datas = "; ".join(self.select_topk_datas(image_datas, query))
+
+            print(topk_datas)
 
             prompt = (
                  "You are a helpful assistant which generates answer to the user question based on given information: "
                 f"{topk_datas}"
                  "Answer the below question based on the given information as short and simple as possible, " 
-                 "If the given information is not enough to answer the question, say 'I don't know'"
-                f"User Question: {query}"
-                 "Answers:"
+                 "If the given information is not enough to answer the question, say 'I don't know' "
+                f"\nUser Question: {query}"
+                 "\nAnswers:"
             )
 
             print(prompt, end="\n\n")
             prompts.append(prompt)
 
-        outputs = self.llm(prompts)[0]["generated_text"]
+        outputs = self.llm(prompts)[0]
+        print(outputs)
         answers = [output.split("Answers:")[-1].strip() for output in outputs]
 
         return answers
