@@ -35,6 +35,7 @@ y0 = boxes_px[:, 1] - boxes_px[:, 3] / 2
 x1 = boxes_px[:, 0] + boxes_px[:, 2] / 2
 y1 = boxes_px[:, 1] + boxes_px[:, 3] / 2
 
+print(f"{x0} {y0} {x1} {y1}")
 print("done")
 plt.imshow(annotated_frame)
 plt.axis('off')
