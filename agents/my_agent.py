@@ -25,8 +25,8 @@ class MyAgent(BaseAgent):
         super().__init__(search_pipeline)
         
         # Load Visual Model
-        CONFIG_PATH = "groundingdino_swinb_cfg.py"
-        WEIGHT_PATH = "groundingdino_swinb.pth"
+        CONFIG_PATH = "groundingdino/config/GroundingDINO_SwinT_OGC.py"
+        WEIGHT_PATH = "groundingdino_swint_ogc.pth"
         DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
         visual_model = load_model(CONFIG_PATH, WEIGHT_PATH)
