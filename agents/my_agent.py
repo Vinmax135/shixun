@@ -174,6 +174,7 @@ class MyAgent(BaseAgent):
             for index, each_data in enumerate(image_datas):
                 image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
             
+            print(image_datas)
             topk_datas = "; ".join(self.select_topk_datas(image_datas, main_objects))
 
             print(topk_datas)
