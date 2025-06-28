@@ -76,6 +76,13 @@ class MyAgent(BaseAgent):
 
         kept_boxes = boxes[0][keep].cpu().numpy()
         
+        print("🔍 Grounding DINO kept boxes (pixel coordinates):")
+        for i, box in enumerate(kept_boxes):
+            x1, y1, x2, y2 = [int(box[j] * (w if j % 2 == 0 else h)) for j in range(4)]
+            x1, x2 = sorted((max(0, x1), min(w, x2)))
+            y1, y2 = sorted((max(0, y1), min(h, y2)))
+            print(f"  Box {i}: x1={x1}, y1={y1}, x2={x2}, y2={y2}")
+
         # Choose the largest box by area
         areas = (kept_boxes[:,2] - kept_boxes[:,0]) * (kept_boxes[:,3] - kept_boxes[:,1])
         best_idx = int(np.argmax(areas))
@@ -86,8 +93,6 @@ class MyAgent(BaseAgent):
         x1, y1, x2, y2 = [int(box_norm[i] * (w if i%2==0 else h)) for i in range(4)]
         x1, x2 = sorted((max(0, x1), min(w, x2)))
         y1, y2 = sorted((max(0, y1), min(h, y2)))
-
-        print(f"🔍 Grounding DINO box (pixels): x1={x1}, y1={y1}, x2={x2}, y2={y2}")
 
         # Step 2: SAM for fine mask
         image_np = np.array(image)
