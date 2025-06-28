@@ -160,7 +160,9 @@ class MyAgent(BaseAgent):
         scores = util.cos_sim(query_emb, corpus_emb)[0]
 
         top_scores, top_indices = scores.topk(k=min(TOP_K, len(scores)))
-        selected_datas = [image_datas[index] for index, score in zip(top_indices, top_scores)]
+        selected_datas = [image_datas[index] for index, score in zip(top_indices, top_scores) if score >= 0.5]
+        if selected_datas == []:
+            selected_datas.append(image_datas[top_indices[0]])
         return selected_datas
 
     def batch_generate_response(self, queries, images, message_histories=None):
@@ -176,7 +178,6 @@ class MyAgent(BaseAgent):
             
             topk_datas = "; ".join(self.select_topk_datas(image_datas, main_objects))
 
-            print(topk_datas)
             prompt = (
                  "You are a helpful assistant which generates answer to the user question based on given information: "
                 f"{topk_datas}"
