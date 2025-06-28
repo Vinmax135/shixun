@@ -152,5 +152,5 @@ class AIAgent(BaseAgent):
 
     def batch_generate_response(self, queries, images, message_histories=None):
         for i in images:
-            i.save()
+            i.save("image.png")
         return self.process(images, queries)
