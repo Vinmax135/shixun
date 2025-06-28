@@ -1,11 +1,5 @@
 import torch
-import numpy as np
-import cv2
 import re
-import json
-import spacy
-from PIL import Image
-from torchvision.transforms import ToTensor
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM, AutoProcessor, AutoModelForZeroShotObjectDetection
 from sentence_transformers import SentenceTransformer, util
 
@@ -28,9 +22,6 @@ class MyAgent(BaseAgent):
         # Load Visual Model
         self.visual_processor = AutoProcessor.from_pretrained(VISUAL_MODEL_NAME)
         self.visual_model = AutoModelForZeroShotObjectDetection.from_pretrained(VISUAL_MODEL_NAME).to("cuda")
-
-        # Object Extract
-        self.object_extractor = spacy.load(EXTRACTOR_MODEL_NAME)
 
         # Load LLM
         offload_folder = "./offload_myagent"
@@ -95,17 +86,22 @@ class MyAgent(BaseAgent):
         return image.crop((x1, y1, x2, y2))
 
     def extract_object(self, query):
-        doc = self.object_extractor(query)
-        objects = []
+        prompt = (
+            "Extract all real-world objects (like physical things) mentioned in this query. "
+            "Return them as a comma-separated list, without explanation.\n"
+            f"Query: {query}\nObjects:"
+        )
 
-        for token in doc:
-            if token.dep_ in ("nsubj", "dobj", "pobj", "attr") and token.pos_ == "NOUN":
-                chunk = [w.text for w in token.lefts if w.dep_ == "amod"]
-                chunk.append(token.text)
-                phrase = " ".join(chunk)
-                objects.append(phrase)
+        output = self.llm(prompt)[0]["generated_text"]
+        result = output.split("Objects:")[-1].strip()
 
-        return ". ".join(objects) + "." if objects else ""
+        # Optionally format result as 'x. y. z.'
+        result = result.replace(",", ".").replace("..", ".").strip()
+        if not result.endswith("."):
+            result += "."
+
+        print(result)
+        return result
 
     def clean_metadata(self, raw_data):
         cleaned = {}
