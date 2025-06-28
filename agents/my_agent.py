@@ -51,7 +51,7 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
-        inputs = self.visual_processor(images=image, text=query, return_tensors="pt").to(self.visual_model.device)
+        inputs = self.visual_processor(images=image, text="red scooter.", return_tensors="pt").to(self.visual_model.device)
 
         with torch.no_grad():
             outputs = self.visual_model(**inputs)
@@ -66,8 +66,6 @@ class MyAgent(BaseAgent):
         if not keep.any():
             print("❗No object matched the query. Returning full image.")
             return image
-
-        print(boxes)
 
         kept_boxes = boxes[0][keep]
         box = kept_boxes[0].cpu().numpy() 
