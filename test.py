@@ -17,8 +17,8 @@ boxes, logits, phrases = predict(
             model=model,
             image=image,
             caption=query,
-            BOX_THRESHOLD=BOX_THRESHOLD,
-            TEXT_THRESHOLD=TEXT_THRESHOLD
+            box_threshold=BOX_THRESHOLD,
+            text_threshold=TEXT_THRESHOLD
         )
 
 annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
