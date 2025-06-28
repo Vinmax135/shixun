@@ -160,7 +160,7 @@ class MyAgent(BaseAgent):
         scores = util.cos_sim(query_emb, corpus_emb)[0]
 
         top_scores, top_indices = scores.topk(k=min(TOP_K, len(scores)))
-        selected_datas = [image_datas[index] for index, score in zip(top_indices, top_scores) if score.item() >= 0.5]
+        selected_datas = [image_datas[index] for index, score in zip(top_indices, top_scores)]
         return selected_datas
 
     def batch_generate_response(self, queries, images, message_histories=None):
