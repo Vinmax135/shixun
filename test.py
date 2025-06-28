@@ -1,11 +1,12 @@
 import json
 import re
 
+from PIL import Image
 import agents.my_agent as agent
 from cragmm_search.search import UnifiedSearchPipeline
 from crag_image_loader import ImageLoader
 
-image = ImageLoader("https://upload.wikimedia.org/wikipedia/commons/9/9a/202312_Dodols_sold_in_a_market_in_Sri_Lanka.jpg").get_image()
+image = Image.open("./image.png")
 
 search_pipeline = UnifiedSearchPipeline(
     text_model_name=None,
@@ -15,4 +16,4 @@ search_pipeline = UnifiedSearchPipeline(
 )
 
 test = agent.MyAgent(search_pipeline)
-print(test.batch_generate_response(["Where and when is it originated from?"], [image]))
+print(test.batch_generate_response(["What is the cost of the bike?"], [image]))
