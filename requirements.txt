@@ -16,4 +16,6 @@ chromadb>=1.0.0
 loguru
 rich
 tqdm
+groundingdino
+opencv-python
 huggingface-hub

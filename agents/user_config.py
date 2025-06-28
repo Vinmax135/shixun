@@ -1,6 +1,6 @@
-from agents.ai_agent import AIAgent
+from agents.my_agent import MyAgent
 
 # UserAgent = RandomAgent
 # UserAgent = SimpleRAGAgent
 # UserAgent = LlamaVisionModel
-UserAgent = AIAgent
+UserAgent = MyAgent

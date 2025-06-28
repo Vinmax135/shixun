@@ -1,0 +1,17 @@
+git clone https://github.com/vinmax135/shixun
+
+cd shixun
+
+pip install -r requirements.txt
+
+pip install vllm==0.7.3
+
+pip install torch==2.6.0
+
+pip install torchvision==0.21.0
+
+wget https://huggingface.co/IDEA-Research/grounding-dino-base/resolve/main/groundingdino_swinb_cfg.py
+
+wget https://huggingface.co/IDEA-Research/grounding-dino-base/resolve/main/groundingdino_swinb.pth
+
+python local_evaluation.py
