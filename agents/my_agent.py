@@ -5,15 +5,14 @@ import re
 import json
 from PIL import Image
 from torchvision.transforms import ToTensor
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM, AutoProcessor, AutoModelForZeroShotObjectDetection
 from sentence_transformers import SentenceTransformer, util
-from groundingdino.util.inference import load_model, predict
-from groundingdino.util.inference import annotate
 
 from agents.base_agent import BaseAgent
 
 # Constants
-MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
+VISUAL_MODEL_NAME = "IDEA-Research/grounding-dino-base"
+LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 1
 BOX_THRESHOLD = 0.3
 TEXT_THRESHOLD = 0.25
@@ -25,24 +24,20 @@ class MyAgent(BaseAgent):
         super().__init__(search_pipeline)
         
         # Load Visual Model
-        CONFIG_PATH = "groundingdino/config/GroundingDINO_SwinT_OGC.py"
-        WEIGHT_PATH = "groundingdino_swint_ogc.pth"
-        DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-        visual_model = load_model(CONFIG_PATH, WEIGHT_PATH)
-        visual_model.to(DEVICE)
+        self.visual_processor = AutoProcessor.from_pretrained(VISUAL_MODEL_NAME)
+        self.visual_model = AutoModelForZeroShotObjectDetection.from_pretrained(VISUAL_MODEL_NAME).to("cuda")
 
         # Load LLM
         offload_folder = "./offload_myagent"
         self.llm_model = AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME,
+            LLM_MODEL_NAME,
             device_map="auto",
             offload_folder=offload_folder,
             torch_dtype="auto",
             trust_remote_code=True
         )
         self.llm_tokenizer = AutoTokenizer.from_pretrained(
-            MODEL_NAME,
+            LLM_MODEL_NAME,
             trust_remote_code=True,
         )
         self.llm = pipeline(
@@ -60,27 +55,30 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
-        image_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+        inputs = self.visual_processor(images=image, text=query, return_tensors="pt").to(self.visual_model.device)
 
-        boxes, phrases = predict(
-            model=self.visual_model,
-            image=image_cv,
-            caption=query,
-            box_threshold=BOX_THRESHOLD,
-            text_threshold=TEXT_THRESHOLD,
-            device=self.DEVICE
-        )
+        with torch.no_grad():
+            outputs = self.visual_model(**inputs)
 
-        if len(boxes) == 0:
+        logits = outputs.logits
+        boxes = outputs.pred_boxes
+
+        scores = torch.sigmoid(logits[0])
+        max_scores, _ = scores.max(dim=1)
+
+        keep = max_scores > TEXT_THRESHOLD
+        if not keep.any():
             print("❗No object matched the query. Returning full image.")
             return image
-        
-        h, w, _ = image_cv.shape
-        x1, y1, x2, y2 = boxes[0]
-        x1 = max(int(x1 * w), 0)
-        y1 = max(int(y1 * h), 0)
-        x2 = min(int(x2 * w), w)
-        y2 = min(int(y2 * h), h)
+
+        kept_boxes = boxes[0][keep]
+        box = kept_boxes[0].cpu().numpy() 
+
+        w, h = image.size
+        x1 = max(int(box[0] * w), 0)
+        y1 = max(int(box[1] * h), 0)
+        x2 = min(int(box[2] * w), w)
+        y2 = min(int(box[3] * h), h)
 
         return image.crop((x1, y1, x2, y2))
 
