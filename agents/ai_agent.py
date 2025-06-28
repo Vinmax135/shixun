@@ -140,6 +140,7 @@ class AIAgent(BaseAgent):
         answers = []
         for img, query in zip(images, queries):
             results = self.search_pipeline(img, k=10)
+            print(results)
             entities = [r["entities"][0] for r in results if r.get("entities")]
             best_info = self.select_topk_entities(entities, query)
 
@@ -150,4 +151,6 @@ class AIAgent(BaseAgent):
         return answers
 
     def batch_generate_response(self, queries, images, message_histories=None):
+        for i in images:
+            i.save()
         return self.process(images, queries)
