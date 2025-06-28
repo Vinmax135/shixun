@@ -75,7 +75,7 @@ class MyAgent(BaseAgent):
             return image
 
         kept_boxes = boxes[0][keep].cpu().numpy()
-        
+        w, h = image.size
         print("🔍 Grounding DINO kept boxes (pixel coordinates):")
         for i, box in enumerate(kept_boxes):
             x1, y1, x2, y2 = [int(box[j] * (w if j % 2 == 0 else h)) for j in range(4)]
