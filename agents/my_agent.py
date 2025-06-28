@@ -91,7 +91,6 @@ class MyAgent(BaseAgent):
         self.sam_predictor.set_image(image_np)
         masks, _, _ = self.sam_predictor.predict(
             box=np.array([x1, y1, x2, y2]),
-            box_format="xyxy",
             multimask_output=False
         )
 
