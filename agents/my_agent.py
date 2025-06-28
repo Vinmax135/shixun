@@ -172,7 +172,7 @@ class MyAgent(BaseAgent):
             for index, each_data in enumerate(image_datas):
                 image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
             
-            topk_datas = "; ".join(self.select_topk_datas(image_datas, main_objects))
+            topk_datas = "; ".join(self.select_topk_datas(image_datas, query))
 
             prompt = (
                  "You are a helpful assistant which generates answer to the user question based on given information: "
