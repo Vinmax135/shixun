@@ -24,7 +24,7 @@ boxes, logits, phrases = predict(
 annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
 
 _, W, H = image.size()
-boxes_px = boxes.copy()
+boxes_px = boxes.clone()
 boxes_px[:, 0] *= W  # x_center
 boxes_px[:, 1] *= H  # y_center
 boxes_px[:, 2] *= W  # width
