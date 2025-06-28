@@ -182,7 +182,7 @@ class MyAgent(BaseAgent):
                  "You are a helpful assistant which generates answer to the user question based on given information: "
                 f"{topk_datas}"
                  "Answer the below question based on the given information as short and simple without any explanation that has no correlation with the question, " 
-                 "If the given information is not enough to answer the question, say 'I don't know' "
+                 "If the given information is not enough to answer the question, just say 'I don't know' "
                 f"\nUser Question: {query}"
                  "\nAnswers:"
             )
