@@ -10,8 +10,7 @@ EXTRACTOR_MODEL_NAME = "en_core_web_sm"
 VISUAL_MODEL_NAME = "IDEA-Research/grounding-dino-base"
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 1
-BOX_THRESHOLD = 0.3
-TEXT_THRESHOLD = 0.25
+TEXT_THRESHOLD = 0.5
 SEARCH_COUNT = 10
 TOP_K = 3
 
@@ -51,7 +50,7 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
-        inputs = self.visual_processor(images=image, text="parked black cars.", return_tensors="pt").to(self.visual_model.device)
+        inputs = self.visual_processor(images=image, text="red electric scooter.", return_tensors="pt").to(self.visual_model.device)
 
         with torch.no_grad():
             outputs = self.visual_model(**inputs)
