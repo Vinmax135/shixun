@@ -79,6 +79,7 @@ class MyAgent(BaseAgent):
         y1 = max(int(box[1] * h), 0)
         x2 = min(int(box[2] * w), w)
         y2 = min(int(box[3] * h), h)
+        print(f"{w} {h} {x1} {y1} {x2} {y2}")
 
         return image.crop((x1, y1, x2, y2))
 
