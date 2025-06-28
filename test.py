@@ -1,8 +1,9 @@
 query = input()
 
 from PIL import Image
-from groundingdino.util.inference import load_model, predict, annotate
+from groundingdino.util.inference import load_model, load_image, predict, annotate
 import matplotlib.pyplot as plt
+import numpy as np
 
 BOX_THRESHOLD = 0.35
 TEXT_THRESHOLD = 0.25
@@ -12,8 +13,7 @@ weight_path = "../GroundingDINO/groundingdino_swint_ogc.pth"
 
 model = load_model(config_path, weight_path)
 
-image = Image.open("./pre.png")
-image_source = "./pre.png"
+image_source, image = load_image(np.array(Image.open("./pre.png")))
 
 boxes, logits, phrases = predict(
             model=model,
