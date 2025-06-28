@@ -67,6 +67,8 @@ class MyAgent(BaseAgent):
             print("❗No object matched the query. Returning full image.")
             return image
 
+        print(boxes)
+
         kept_boxes = boxes[0][keep]
         box = kept_boxes[0].cpu().numpy() 
 
@@ -78,6 +80,8 @@ class MyAgent(BaseAgent):
 
         x1, x2 = sorted([max(0, x1), min(w, x2)])
         y1, y2 = sorted([max(0, y1), min(h, y2)])
+
+        print(f"\n\n{w} {h} {x1} {y1} {x2} {y2}\n\n")
 
         if x2 <= x1 or y2 <= y1:
             print("❗Box collapsed after sorting. Returning full image.")
