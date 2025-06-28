@@ -149,7 +149,9 @@ class MyAgent(BaseAgent):
         prompts = []
 
         for query, image in zip(queries, images):
+            image.save("pre.png")
             image = self.crop_images(image, query)
+            image.save("post.png")
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
             
             print(image_datas)
@@ -173,8 +175,8 @@ class MyAgent(BaseAgent):
             print(prompt, end="\n\n")
             prompts.append(prompt)
 
-        outputs = self.llm(prompts)[0]
+        outputs = self.llm(prompts)
         print(outputs)
-        answers = [output.split("Answers:")[-1].strip() for output in outputs]
+        answers = [output[0]["generated_text"].split("Answers:")[-1].strip() for output in outputs]
 
         return answers
