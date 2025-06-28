@@ -12,4 +12,12 @@ pip install torchvision==0.21.0
 
 python -m spacy download en_core_web_sm
 
+git clone https://github.com:facebookresearch/segment-anything.git
+
+cd segment-anything
+
+pip install -e .
+
+wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+
 python local_evaluation.py

@@ -12,7 +12,7 @@ from agents.base_agent import BaseAgent
 EXTRACTOR_MODEL_NAME = "en_core_web_sm"
 VISUAL_MODEL_NAME = "IDEA-Research/grounding-dino-base"
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
-SAM_CHECKPOINT = "path/to/sam_vit_h_4b8939.pth"
+SAM_CHECKPOINT = "./segment-anything/sam_vit_h_4b8939.pth"
 SAM_MODEL_TYPE = "vit_h"
 BATCH_SIZE = 1
 TEXT_THRESHOLD = 0.5
