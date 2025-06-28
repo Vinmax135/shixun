@@ -167,6 +167,7 @@ class MyAgent(BaseAgent):
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
             image = self.crop_images(image, main_objects)
+            image.save("test.png")
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
 
             for index, each_data in enumerate(image_datas):
