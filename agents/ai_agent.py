@@ -139,7 +139,7 @@ class AIAgent(BaseAgent):
     def process(self, images, queries):
         answers = []
         for img, query in zip(images, queries):
-            results = self.search(img, k=10)
+            results = self.search_pipeline(img, k=10)
             entities = [r["entities"][0] for r in results if r.get("entities")]
             best_info = self.select_topk_entities(entities, query)
 
