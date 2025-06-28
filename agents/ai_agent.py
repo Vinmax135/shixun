@@ -3,7 +3,7 @@ import json
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer, util
 
-from base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 # Constants
 MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
