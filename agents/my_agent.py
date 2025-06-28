@@ -167,14 +167,14 @@ class MyAgent(BaseAgent):
         prompts = []
 
         for query, image in zip(queries, images):
-            print(self.extract_object(query))
-            image = self.crop_images(image, self.extract_object(query))
+            main_objects = self.extract_object(query)
+            image = self.crop_images(image, main_objects)
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
 
             for index, each_data in enumerate(image_datas):
                 image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
             
-            topk_datas = "; ".join(self.select_topk_datas(image_datas, query))
+            topk_datas = "; ".join(self.select_topk_datas(image_datas, main_objects))
 
             print(topk_datas)
             prompt = (
