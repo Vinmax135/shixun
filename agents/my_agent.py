@@ -148,16 +148,8 @@ class MyAgent(BaseAgent):
         summarization = "; ".join(f"{k} is {v}" for k, v in image_data.items())
         return summarization
 
-    def select_topk_datas(self, image_datas, query):
-        query_emb = self.semantic_model.encode(query, convert_to_tensor=True)
-        corpus_emb = self.semantic_model.encode(image_datas, convert_to_tensor=True)
-        scores = util.cos_sim(query_emb, corpus_emb)[0]
-
-        top_scores, top_indices = scores.topk(k=min(TOP_K, len(scores)))
-        selected_datas = [image_datas[index] for index, score in zip(top_indices, top_scores) if score >= 0.5]
-        if selected_datas == []:
-            selected_datas.append(image_datas[top_indices[0]])
-        return selected_datas
+    def select_topk_datas(self, image_datas):
+        return image_datas[:3]
 
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
@@ -167,13 +159,10 @@ class MyAgent(BaseAgent):
             image = self.crop_images(image, main_objects)
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
 
-            with open("test.txt", "w") as temp:
-                temp.write(str(image_datas))
-
             for index, each_data in enumerate(image_datas):
                 image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
             
-            topk_datas = "; ".join(self.select_topk_datas(image_datas, query))
+            topk_datas = "; ".join(self.select_topk_datas(image_datas))
 
             prompt = (
                  "You are a helpful assistant which generates answer to the user question based on given information: "
