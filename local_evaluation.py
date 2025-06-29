@@ -553,7 +553,7 @@ def main() -> None:
         )
 
     # Suppress web search API if the flag is set - useful for Task 1 (Single-source Augmentation)
-    search_api_text_model_name = "sentence-transformers/all-MiniLM-L6-v2"
+    search_api_text_model_name = "intfloat/e5-large-v2"
     search_api_image_model_name = "openai/clip-vit-large-patch14-336"
     search_api_web_hf_dataset_id = "crag-mm-2025/web-search-index-validation"
     search_api_image_hf_dataset_id = "crag-mm-2025/image-search-index-validation"
