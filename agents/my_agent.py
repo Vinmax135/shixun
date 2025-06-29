@@ -5,6 +5,7 @@ from torchvision.ops import box_convert
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
+from sentence_transformers import SentenceTransformer, util
 from agents.base_agent import BaseAgent
 
 # Constants
@@ -58,6 +59,7 @@ class MyAgent(BaseAgent):
             max_new_tokens=16,
             do_sample=False
         )
+        self.semantic = SentenceTransformer('all-MiniLM-L6-v2')
     
     def get_batch_size(self) -> int:
         return BATCH_SIZE
@@ -163,7 +165,7 @@ class MyAgent(BaseAgent):
         cleaned["name"] = raw_data["entity_name"]
 
         if raw_data["entity_attributes"] == None:
-            return {}
+            return {"name": raw_data["entity_name"]}
 
         for key, value in raw_data["entity_attributes"].items():
             if key in ignored_keys:
@@ -171,7 +173,7 @@ class MyAgent(BaseAgent):
 
             value = str(value)
 
-            if len(value) > 1000:
+            if len(value) > 500:
                 cleaned.update(self.paragraph_to_dict(value))
                 continue
 
@@ -203,7 +205,7 @@ class MyAgent(BaseAgent):
 
         return cleaned
     
-    def paragraph_to_dict(self, text):
+    def paragraph_to_dict(self, text):                                                          # Done
         prompt = """
             Extract structured attributes from the following product description.
             Strictly return them as a JSON object with simple field names like 'price', 'engine', 'brand', 'use_case', etc. no explanations or ideas should exist in the output.
@@ -236,24 +238,40 @@ class MyAgent(BaseAgent):
         print(preprocessed_responses)
         return json.loads(preprocessed_responses)
 
+    def rerank(self, image_data, query):
+        query_emb = self.semantic.encode(query, convert_to_tensor=True)
+
+        reranked = []
+        for info in image_data:
+            candidate_text = info["name"]
+            for key in info:
+                if not key == "name":
+                    candidate_text += " " + info[key]
+            
+            data_emb = self.semantic.encode(query, convert_to_tensor=True)
+            reranked.append(util.cos_sim(query_emb, data_emb).item())
+
+        return image_data[reranked.index(max(reranked))]
+
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
-        for i, (query, image) in enumerate(zip(queries, images)):
-            print(f"\t\t\t\t\t {i}")
-            print(f"\t\t\t\t\t {query}")
+        for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
-            print(f"\t\t\t\t\t {main_objects}")
-            image.save(f"test/pre{i}.png")
             cropped_images = self.crop_images(image, main_objects)
-            cropped_images[0].save(f"test/post{i}.png")
+
             images_datas = []
             for each_image in cropped_images:
-                images_datas.append(self.search_pipeline(each_image, k=SEARCH_COUNT))
+                raw_data = self.search_pipeline(each_image, k=SEARCH_COUNT)
 
-            for index, each_data in enumerate(images_datas):
-                images_datas[index] = self.clean_metadata(each_data[0]["entities"])
+                cleaned_datas = []
+                for each_data in raw_data:
+                    cleaned_datas.append(self.clean_metadata(each_data[0]["entities"]))
+                
+                possibly_true_data = self.rerank(cleaned_datas, query)
+
                 print("\n\n")
-                print(images_datas[index])
+                print(possibly_true_data)
                 print("\n\n")
+                images_datas.append()
 
         return [query for query in queries]
