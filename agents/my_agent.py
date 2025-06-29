@@ -87,7 +87,7 @@ class MyAgent(BaseAgent):
 
     def extract_object(self, query):                                                         
         prompt = (
-            "List all real-world physical objects with its attributes mentioned in the following query, "
+            "List all real-world physical objects mentioned in the following query, "
             "even if they are not the main focus of the question. "
             "Return them as a comma-separated list with no explanation.\n"
             "Examples:\n"
@@ -97,7 +97,7 @@ class MyAgent(BaseAgent):
         )
 
         output = self.llm(prompt)[0]["generated_text"]
-        result = output.split("Objects:")[-1].strip()
+        result = output.split("Objects:")[-1].strip().split("\n")[0]
 
         return result.split(", ")
 
