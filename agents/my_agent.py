@@ -73,8 +73,9 @@ class MyAgent(BaseAgent):
 
             if len(xyxy) > 0:
                 cropped_images.append(image.crop(xyxy[0]))
-            else:
-                cropped_images.append(image)
+
+        if not cropped_images > 0:
+            cropped_images.append(image)
 
         return cropped_images
 
@@ -107,9 +108,10 @@ class MyAgent(BaseAgent):
             ---
 
             User query: "{query}"
-            Output:"""
+            Output:
+            """
         output = self.llm(prompt)
-        return output[0]["generated_text"].split("Output:")[-1].strip().split(', ')
+        return output[0]["generated_text"].split("Output:")[-1].strip().split("\n")[0].split(', ')
 
     def clean_metadata(self, raw_data):                                                   
         cleaned = {}
