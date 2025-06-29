@@ -75,8 +75,10 @@ class MyAgent(BaseAgent):
         boxes = boxes * torch.Tensor([w, h, w, h])
         xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
 
-        x0, y0, x1, y1 = xyxy[0]
-        print(xyxy)
+        if len(xyxy) > 0:
+            x0, y0, x1, y1 = xyxy[0]
+        else:
+            return image
 
         return image.crop((x0, y0, x1, y1))
 
@@ -97,7 +99,7 @@ class MyAgent(BaseAgent):
 
         return result
 
-    def clean_metadata(self, raw_data):
+    def clean_metadata(self, raw_data):                                                         # Done
         cleaned = {}
         ignored_keys = [
             "image", "image_size", "mapframe_wikidata", "coordinates",
@@ -144,11 +146,11 @@ class MyAgent(BaseAgent):
 
         return cleaned
 
-    def summarize_data(self, image_data):
+    def summarize_data(self, image_data):                                                       # Done
         summarization = "; ".join(f"{k} is {v}" for k, v in image_data.items())
         return summarization
 
-    def select_topk_datas(self, image_datas):
+    def select_topk_datas(self, image_datas):                                                   # Done
         return image_datas[:3]
 
     def batch_generate_response(self, queries, images, message_histories=None):
