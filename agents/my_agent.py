@@ -234,7 +234,6 @@ class MyAgent(BaseAgent):
         output = self.llm_extract_description(prompt)
         responses = output[0]["generated_text"].split("Output:")[-1]
         preprocessed_responses = "{" + responses.split("{")[1].split("}")[0].strip() + "}"
-        print(preprocessed_responses)
         return json.loads(preprocessed_responses)
 
     def rerank(self, image_data, query):
@@ -296,19 +295,27 @@ class MyAgent(BaseAgent):
             text_search = text_search.strip()
         
             prompt = f"""
-                You are a helpful assistant that is great at answer user question based on following information:
-                {image_search}
+            You are a helpful assistant that answers user questions based on two information sources:
 
-                {text_search}
+            1.  **Image-based Search Results**:
+            These are facts extracted from objects in the image the user is asking about. This may include brand, ingredients, calories, or visual traits.
 
-                User Question:
-                {query}
+            {image_search}
 
-                No yapping, just answer the given question without any additional explanations or informations.
-                If you dont know say i dont know.
+            2.  **Web-based Text Search Results**:
+            These are retrieved based on the user\'s question. This might include general knowledge or common answers from the web.
 
-                Answers:
-            """
+            {text_search}
+
+            ---
+
+             **Task**:
+            Use both sources to answer the following user question as accurately and concisely as possible. If the answer is not available, say "I'm not sure based on the given data."
+
+            💬 **User Question**:
+            {query}
+
+            ✍️ **Answers**:"""
             prompts.append(prompt)
 
         output = self.llm_generate(prompts)
