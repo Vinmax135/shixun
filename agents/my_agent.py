@@ -157,7 +157,6 @@ class MyAgent(BaseAgent):
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
         i = 0
-        os.mkdir("test")
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
             print(main_objects)
