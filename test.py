@@ -1,9 +1,11 @@
 query = input()
 
 from PIL import Image
+import torch
 from groundingdino.util.inference import load_model, load_image, predict, annotate
 import matplotlib.pyplot as plt
 import numpy as np
+from torchvision.ops import box_convert
 
 BOX_THRESHOLD = 0.35
 TEXT_THRESHOLD = 0.25
@@ -25,14 +27,11 @@ boxes, logits, phrases = predict(
 
 annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
 
-W, H = Image.open("./pre.png").size
-print(boxes)
-boxes_px = boxes[0]
-boxes_px[0] *= W  # x_center
-boxes_px[1] *= H  # y_center
-boxes_px[2] *= W  # width
-boxes_px[3] *= H  # height
-print(boxes_px)
+h, w, _ = image_source.shape
+boxes = boxes * torch.Tensor([w, h, w, h])
+xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
+
+print(xyxy)
 print("done")
 plt.imshow(annotated_frame)
 plt.axis('off')
