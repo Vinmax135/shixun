@@ -308,7 +308,8 @@ class MyAgent(BaseAgent):
             ---
 
              **Task**:
-            Use both sources to answer the following user question as accurately and concisely as possible. If the answer is not available, say "I'm not sure based on the given data."
+            Use both sources to answer the following user question as accurately and simple as possible. If the answer is not available, say "I don't know."
+            Do not reply with any explanations, ideas or additional informations, just the answer for the query
 
             **User Question**:
             {query}
@@ -318,7 +319,7 @@ class MyAgent(BaseAgent):
 
         output = self.llm_generate(prompts)
         print(output)
-        response = [out[0]["generated_text"].split("Answers:")[-1] for out in output]
+        response = [out[0]["generated_text"].split("Answers:")[-1].strip() for out in output]
 
         return response
     
