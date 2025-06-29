@@ -279,15 +279,21 @@ class MyAgent(BaseAgent):
             text_datas = []
             for each_data in images_datas:
                 prompt = "What to know about " + each_data["name"]
-                text_search = self.search_pipeline(prompt, k=1)
-                text_datas.append(text_search)
-            print(text_datas)
+                text_search_results = self.search_pipeline(prompt, k=1)
+                text_datas.append(text_search_results[0])
 
             image_search = ""
             for each_data in images_datas:
                 image_search += "\n\n" + self.summarize_data(each_data)
 
             image_search = image_search.strip()
+
+            text_search = ""
+            for each in text_datas:
+                if each["score"] > 0.75:
+                    text_search += "\n\n" + each["page_snippets"]
+            
+            text_search = text_search.strip()
         
             prompt = f"""
                 You are a helpful assistant that is great at answer user question based on following information:
