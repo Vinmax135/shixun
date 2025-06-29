@@ -215,8 +215,9 @@ class MyAgent(BaseAgent):
             founder: Frank Yang,
             ...
             ---
-            Only output a single attribute name for every attribute and put the answers in output below strictly with JSON format, if there are datas about link just ignore it, keep the value as short as possible and only parse important ones.
-
+            Put the answers in output below strictly with JSON format, if there are datas about link just ignore it, keep the value as short as possible and only parse important ones.
+            If the attribute is similar you can append it into one key
+            
             Description:
             \"\"\"
             {text}
