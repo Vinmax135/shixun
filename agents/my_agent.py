@@ -107,9 +107,7 @@ class MyAgent(BaseAgent):
             ---
 
             User query: "{query}"
-            Output:
-
-        """
+            Output:"""
         output = self.llm(prompt)
         return output[0]["generated_text"].split("Output:")[-1].strip().split(', ')
 
