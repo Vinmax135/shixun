@@ -31,7 +31,7 @@ boxes_px[:, 0] *= W  # x_center
 boxes_px[:, 1] *= H  # y_center
 boxes_px[:, 2] *= W  # width
 boxes_px[:, 3] *= H  # height
-
+print(boxes)
 print(boxes_px)
 print("done")
 plt.imshow(annotated_frame)
