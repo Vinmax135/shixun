@@ -44,6 +44,13 @@ class MyAgent(BaseAgent):
             max_new_tokens=8,
             do_sample=False
         )
+        self.llm_extract_description = pipeline(
+            "text2text-generation",
+            model=self.llm_model,
+            tokenizer=self.llm_tokenizer,
+            max_new_tokens=512,
+            do_sample=False
+        )
         self.llm_generate = pipeline(
             "text-generation",
             model=self.llm_model,
@@ -217,8 +224,8 @@ class MyAgent(BaseAgent):
             Output:
         """
 
-        output = self.llm_extract(prompt)
-        responses = output[0]["generated_text"].split("Output:")[-1].strip()
+        output = self.llm_extract_description(prompt)
+        responses = output[0]["generated_text"]
         print(responses)
         return json.loads(responses)
 
