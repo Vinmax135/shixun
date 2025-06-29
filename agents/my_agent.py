@@ -96,6 +96,7 @@ class MyAgent(BaseAgent):
                                               
         prompt = (
             "From the following list, return only real-world physical objects.\n"
+            "Do not output any text that is not from input below\n"
             "Input: " + ", ".join(object_list) + "\n"
             "Output: "
         )
