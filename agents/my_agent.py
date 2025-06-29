@@ -264,8 +264,11 @@ class MyAgent(BaseAgent):
                 raw_data = self.search_pipeline(each_image, k=SEARCH_COUNT)
 
                 cleaned_datas = []
+                print("\n\n")
+                print(raw_data)
+                
                 for each_data in raw_data:
-                    cleaned_datas.append(self.clean_metadata(each_data[0]["entities"]))
+                    cleaned_datas.append(self.clean_metadata(each_data["entities"]))
                 
                 possibly_true_data = self.rerank(cleaned_datas, query)
 
@@ -273,5 +276,7 @@ class MyAgent(BaseAgent):
                 print(possibly_true_data)
                 print("\n\n")
                 images_datas.append()
+
+                text_search_data = self.search_pipeline(each_image)
 
         return [query for query in queries]
