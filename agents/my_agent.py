@@ -13,8 +13,7 @@ LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 15
 BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
-SEARCH_COUNT = 1
-TOP_K = 3
+SEARCH_COUNT = 5
 
 class MyAgent(BaseAgent):
     def __init__(self, search_pipeline):
@@ -266,7 +265,7 @@ class MyAgent(BaseAgent):
                 cleaned_datas = []
                 print("\n\n")
                 print(raw_data)
-                
+
                 for each_data in raw_data:
                     cleaned_datas.append(self.clean_metadata(each_data["entities"]))
                 
@@ -275,8 +274,6 @@ class MyAgent(BaseAgent):
                 print("\n\n")
                 print(possibly_true_data)
                 print("\n\n")
-                images_datas.append()
-
-                text_search_data = self.search_pipeline(each_image)
+                images_datas.append(possibly_true_data)
 
         return [query for query in queries]
