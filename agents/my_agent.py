@@ -272,8 +272,6 @@ class MyAgent(BaseAgent):
                 
                 possibly_true_data = self.rerank(cleaned_datas, query)
                 images_datas.append(possibly_true_data)
-
-            print(images_datas)
             
             text_datas = []
             for each_data in images_datas:
