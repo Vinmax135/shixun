@@ -168,7 +168,7 @@ class MyAgent(BaseAgent):
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
 
             with open("test.txt", "w") as temp:
-                temp.write(image_datas)
+                temp.write(str(image_datas))
 
             for index, each_data in enumerate(image_datas):
                 image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
