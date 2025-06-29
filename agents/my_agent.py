@@ -305,12 +305,14 @@ class MyAgent(BaseAgent):
                 {query}
 
                 No yapping, just answer the given question without any additional explanations or informations.
+                If you dont know say i dont know.
 
                 Answers:
             """
             prompts.append(prompt)
 
-        print(self.llm_generate(prompts))
+        output = self.llm_generate(prompts)
+        response = [output[0]["generated_text"].split("Answers:")[-1] for out in output]
 
-        return [query for query in queries]
+        return response
     
