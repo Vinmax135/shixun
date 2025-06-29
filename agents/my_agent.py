@@ -92,7 +92,11 @@ class MyAgent(BaseAgent):
     def extract_object(self, query):  
         print(query)
         object_extract = self.object_extractor(query)
-        object_list = [chunk.text for chunk in object_extract.noun_chunks]
+        object_list = [
+            chunk.text.strip()
+            for chunk in object_extract.noun_chunks
+            if chunk.root.pos_ != "PRON"
+        ]
         print(f"\n\n{object_list}\n\n")
                                               
         prompt = (
