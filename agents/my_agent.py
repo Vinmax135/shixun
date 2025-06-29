@@ -74,7 +74,7 @@ class MyAgent(BaseAgent):
             if len(xyxy) > 0:
                 cropped_images.append(image.crop(xyxy[0]))
 
-        if not cropped_images > 0:
+        if not len(cropped_images) > 0:
             cropped_images.append(image)
 
         return cropped_images
