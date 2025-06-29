@@ -93,6 +93,7 @@ class MyAgent(BaseAgent):
         print(query)
         object_extract = self.object_extractor(query)
         object_list = [chunk.text for chunk in object_extract.noun_chunks]
+        print(f"\n\n{object_list}\n\n")
                                               
         prompt = (
             "From the following list, return only real-world physical objects.\n"
