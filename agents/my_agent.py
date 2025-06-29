@@ -245,7 +245,7 @@ class MyAgent(BaseAgent):
             candidate_text = info["name"]
             for key in info:
                 if not key == "name":
-                    candidate_text += " " + info[key]
+                    candidate_text += " " + str(info[key])
             
             data_emb = self.semantic.encode(query, convert_to_tensor=True)
             reranked.append(util.cos_sim(query_emb, data_emb).item())
