@@ -3,6 +3,7 @@ import re
 import cv2
 import numpy as np
 import os
+import spacy
 from torchvision.ops import box_convert
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer, util
@@ -50,6 +51,9 @@ class MyAgent(BaseAgent):
 
         # Model For Semantic Relationships
         self.semantic_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+        # Model For Object Extract
+        self.object_extractor = spacy.load("en_core_web_sm")
     
     def get_batch_size(self) -> int:
         return BATCH_SIZE
@@ -86,19 +90,18 @@ class MyAgent(BaseAgent):
         return cropped_images
 
     def extract_object(self, query):  
-        print(query)                                                       
+        print(query)
+        object_extract = self.object_extractor(query)
+        object_list = [chunk.text for chunk in object_extract.noun_chunks]
+                                              
         prompt = (
-            "List all real-world physical objects mentioned in the following query, "
-            "even if they are not the main focus of the question. "
-            "Return just the object name as a comma-separated list with no explanation.\n"
-            "Examples:\n"
-            "Query: What is the brand of the red car?\nObjects: red car\n"
-            "Query: Can i throw the garbage into the left bin?\nObjects: garbage, left bin\n"
-           f"Query: {query}\nObjects:"
+            "From the following list, return only real-world physical objects.\n"
+            "Input: " + ", ".join(object_list) + "\n"
+            "Output: "
         )
 
         output = self.llm(prompt)[0]["generated_text"]
-        result = output.split("Objects:")[-1].strip()
+        result = output.split("Output:")[-1].strip()
 
         return result.split(", ")
 
