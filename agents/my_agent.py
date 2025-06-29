@@ -304,6 +304,8 @@ class MyAgent(BaseAgent):
                 User Question:
                 {query}
 
+                Answer it simple and short as possible with a maximal of 1 sentence. no explanations or ideas should be available.
+
                 Answers:
             """
             prompts.append(prompt)
