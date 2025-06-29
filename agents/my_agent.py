@@ -310,13 +310,14 @@ class MyAgent(BaseAgent):
              **Task**:
             Use both sources to answer the following user question as accurately and concisely as possible. If the answer is not available, say "I'm not sure based on the given data."
 
-            💬 **User Question**:
+            **User Question**:
             {query}
 
-            ✍️ **Answers**:"""
+            Answers:"""
             prompts.append(prompt)
 
         output = self.llm_generate(prompts)
+        print(output)
         response = [out[0]["generated_text"].split("Answers:")[-1] for out in output]
 
         return response
