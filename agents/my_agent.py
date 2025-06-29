@@ -163,7 +163,7 @@ class MyAgent(BaseAgent):
                 images_datas.append(self.search_pipeline(each_image, k=SEARCH_COUNT))
 
             for index, each_data in enumerate(images_datas):
-                images_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
+                images_datas[index] = self.summarize_data(self.clean_metadata(each_data[0]["entities"]))
 
             information = "\n\n".join(images_datas)
 
