@@ -196,16 +196,29 @@ class MyAgent(BaseAgent):
     def paragraph_to_dict(self, text):
         prompt = f"""
             Extract structured attributes from the following product description.
-            Return them as a JSON object with simple field names like 'price', 'engine', 'brand', 'use_case', etc.
+            Strictly return them as a JSON object with simple field names like 'price', 'engine', 'brand', 'use_case', etc. no explanations or ideas should exist in the output.
+            ---
+            Example 1:
+            Description:
+            \"\"\"
+            In 2000, Simplehuman was founded by Frank Yang, who immigrated to the United States from Taiwan in 1982 and later started the company with the idea of making a better trash can. He showed his design and received his first orders at the International Home and Housewares Show from retailers such as The Container Store and Bed Bath & Beyond. The company was originally called Canworks due to its focus on trash cans, butYang changed the name to Simplehuman in 2001 when the company began to broaden its product line into other kitchen and bath tools, under the tagline “Tools for Efficient Living”. In 2003, Simplehuman opened a UK subsidiary in Oxfordshire, England to serve the European market.
+            \"\"\"
+            Output:
+            year_founded: 2000,
+            founder: Frank Yang,
+            ...
+            ---
 
             Description:
             \"\"\"
             {text}
             \"\"\"
+
+            Output:
         """
 
         output = self.llm_extract(prompt)
-        responses = output[0]["generated_text"]
+        responses = output[0]["generated_text"].split("Output:")[-1].strip()
         print(responses)
         return json.loads(responses)
 
