@@ -179,9 +179,9 @@ class MyAgent(BaseAgent):
             print(f"\t\t\t\t\t {query}")
             main_objects = self.extract_object(query)
             print(f"\t\t\t\t\t {main_objects}")
-            image.save(f"pre{i}")
+            image.save(f"test/pre{i}.png")
             cropped_images = self.crop_images(image, main_objects)
-            image.save(f"post{i}")
+            image.save(f"test/post{i}.png")
             i += 1
             images_datas = []
             for each_image in cropped_images:
