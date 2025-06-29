@@ -106,6 +106,10 @@ class MyAgent(BaseAgent):
 
         raw_data = raw_data[0]
         cleaned["name"] = raw_data["entity_name"]
+
+        if raw_data["entity_attributes"] == None:
+            return {}
+
         for key, value in raw_data["entity_attributes"].items():
             if key in ignored_keys:
                 continue
