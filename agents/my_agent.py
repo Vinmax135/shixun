@@ -317,7 +317,7 @@ class MyAgent(BaseAgent):
             prompts.append(prompt)
 
         output = self.llm_generate(prompts)
-        response = [output[0]["generated_text"].split("Answers:")[-1] for out in output]
+        response = [out[0]["generated_text"].split("Answers:")[-1] for out in output]
 
         return response
     
