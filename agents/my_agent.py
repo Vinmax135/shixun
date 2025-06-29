@@ -1,12 +1,8 @@
 import torch
 import re
-import cv2
-import numpy as np
-import os
 import spacy
 from torchvision.ops import box_convert
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-from sentence_transformers import SentenceTransformer, util
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from agents.base_agent import BaseAgent
@@ -48,9 +44,6 @@ class MyAgent(BaseAgent):
             max_new_tokens=16,
             do_sample=False
         )
-
-        # Model For Semantic Relationships
-        self.semantic_model = SentenceTransformer("all-MiniLM-L6-v2")
 
         # Model For Object Extract
         self.object_extractor = spacy.load("en_core_web_sm")
@@ -100,10 +93,12 @@ class MyAgent(BaseAgent):
         print(f"\n\n{object_list}\n\n")
                                               
         prompt = (
-            "From the following list, return only real-world physical objects.\n"
-            "Do not output any text that is not from input below\n"
-            "Input: " + ", ".join(object_list) + "\n"
-            "Output: "
+            "From the following list, return only the real-world physical objects — "
+            "things that can be seen, touched, or held. Exclude pronouns, ideas, brands, and abstract terms.\n"
+            "if there are none, return 'none'"
+            "Only return texts specified in input, no any explanations.\n"
+            ""
+            f"Input: {', '.join(object_list)}\nOutput:"
         )
 
         output = self.llm(prompt)[0]["generated_text"]
