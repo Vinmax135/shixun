@@ -155,10 +155,15 @@ class MyAgent(BaseAgent):
 
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
-
+        i = 0
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
+            print(main_objects)
+            image.save(f"test/pre{i}.png")
             image = self.crop_images(image, main_objects)
+            image.save(f"test/post{i}.png")
+            i += 1
+            print(query)
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
 
             for index, each_data in enumerate(image_datas):
@@ -174,8 +179,6 @@ class MyAgent(BaseAgent):
                 f"\nUser Question: {query}"
                  "\nAnswers:"
             )
-
-            print(prompt, end="\n\n")
             prompts.append(prompt)
 
         outputs = self.llm(prompts)
