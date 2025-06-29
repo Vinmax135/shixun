@@ -215,6 +215,7 @@ class MyAgent(BaseAgent):
             founder: Frank Yang,
             ...
             ---
+            Put answers in the output below strictly with JSON format
 
             Description:
             \"\"\"
