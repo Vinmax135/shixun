@@ -278,7 +278,7 @@ class MyAgent(BaseAgent):
             search_prompt = query
             for index, each_object in enumerate(main_objects):
                 replace_text = images_datas[index]["name"] + (each_object if not each_object == "item" else "")
-                search_prompt.replace(each_object, replace_text)
+                search_prompt = search_prompt.replace(each_object, replace_text)
             
             print(search_prompt)
             text_search = self.search_pipeline(search_prompt, k=1)
