@@ -1,17 +1,10 @@
 import torch
 import re
-import spacy
 from torchvision.ops import box_convert
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from agents.base_agent import BaseAgent
-
-import nltk
-nltk.download('wordnet')
-nltk.download('omw-1.4')
-
-from nltk.corpus import wordnet as wn
 
 # Constants
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
@@ -89,22 +82,39 @@ class MyAgent(BaseAgent):
         return cropped_images
 
     def extract_object(self, query):  
-        print(f"\n\n {query}")
-        result = []
-        object_extract = self.object_extractor(query)
-        for token in object_extract:
-            if token.dep_ in ("dobj", "pobj", "attr") and token.pos_ == "NOUN":
-                synsets = wn.synsets(token.text.lower(), pos=wn.NOUN)
-                if not synsets:
-                    continue
-                physical_entity = wn.synset('physical_entity.n.01')
-                for syn in synsets:
-                    if physical_entity in syn.lowest_common_hypernyms(physical_entity):
-                        modifiers = [child.text for child in token.children if child.dep_ == "amod"]
-                        phrase = " ".join(modifiers + [token.text])
-                        result.append(phrase.strip())
+        prompt = f"""
+            You are a helpful AI assistant specialized in understanding user queries and guiding visual search.
+            Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question.
+            Only output the key object names or phrases that are visually grounded and relevant for the image search. Ignore abstract or non-visual words like "price", "cost", "calories", or vague pronouns like "this" unless they can be concretely linked to a known object.
+            If the query refers vaguely (e.g., "this item") and no specific object can be extracted, respond with the most general term like "item".
+            ---
+            Example 1:
+            User query: "What is the brand of the biscuits?"
+            Output: biscuits
 
-        return result
+            Example 2:
+            User query: "Can I put batteries into the left bin?"
+            Output: batteries, left bin
+
+            Example 3:
+            User query: "How many calories does this item have?"
+            Output: item
+
+            Example 4:
+            User query: "What type of dog is this item designed as?"
+            Output: dog
+
+            Example 5:
+            User query: "How to wash it?"
+            Output: item
+            ---
+
+            User query: "{query}"
+            Output:
+
+        """
+        output = self.llm(prompt)
+        return output[0]["generated_text"].split("Output:")[-1].strip().split(', ')
 
     def clean_metadata(self, raw_data):                                                   
         cleaned = {}
