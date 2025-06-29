@@ -53,8 +53,6 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
-        image = cv2.cvtColor(np.array(image.convert("RGB")), cv2.COLOR_RGB2BGR)    
-
         boxes, logits, phrases = predict(
             model=self.visual_model,
             image=image,
@@ -63,7 +61,7 @@ class MyAgent(BaseAgent):
             text_threshold=TEXT_THRESHOLD
         )
 
-        h, w, _ = image.shape
+        w, h = image.size
         boxes = boxes * torch.Tensor([w, h, w, h])
         xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
 
