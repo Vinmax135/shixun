@@ -180,7 +180,7 @@ class MyAgent(BaseAgent):
             print(f"\t\t\t\t\t {main_objects}")
             image.save(f"test/pre{i}.png")
             cropped_images = self.crop_images(image, main_objects)
-            image.save(f"test/post{i}.png")
+            cropped_images[0].save(f"test/post{i}.png")
             images_datas = []
             for each_image in cropped_images:
                 images_datas.append(self.search_pipeline(each_image, k=SEARCH_COUNT))
