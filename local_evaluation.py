@@ -557,11 +557,7 @@ def main() -> None:
     search_api_image_model_name = "openai/clip-vit-large-patch14-336"
     search_api_web_hf_dataset_id = "crag-mm-2025/web-search-index-validation"
     search_api_image_hf_dataset_id = "crag-mm-2025/image-search-index-validation"
-        
-    if args.suppress_web_search_api:
-        # Suppress web search API - useful for Task 1 (Single-source Augmentation)
-        search_api_web_hf_dataset_id = None
-    
+
     search_pipeline = UnifiedSearchPipeline(
         text_model_name=search_api_text_model_name,
         image_model_name=search_api_image_model_name,
