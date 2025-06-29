@@ -2,6 +2,7 @@ import torch
 import re
 import cv2
 import numpy as np
+import os
 from torchvision.ops import box_convert
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer, util
@@ -156,6 +157,7 @@ class MyAgent(BaseAgent):
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
         i = 0
+        os.mkdir("test")
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
             print(main_objects)
