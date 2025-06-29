@@ -206,6 +206,7 @@ class MyAgent(BaseAgent):
 
         output = self.llm_extract(prompt)
         responses = output[0]["generated_text"]
+        print(responses)
         return json.loads(responses)
 
     def batch_generate_response(self, queries, images, message_histories=None):
