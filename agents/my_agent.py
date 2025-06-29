@@ -218,8 +218,9 @@ class MyAgent(BaseAgent):
             }
             ---
             Only return a single JSON object.Do not repeat or invent fields not found in the description. No explanations. No story. Only important attribute-value pairs and keep the value as short as possible.
-            Put the answers in output below strictly with JSON format, if there are datas about link just ignore it.
-            If the attribute is similar you can append it into one key
+            Only include attributes that can be confidently extracted from the text. 
+            Do not include null values or empty lists. 
+            Return only with a valid JSON format, nothing else.
 
             Description:
             \"\"\"""" + \
