@@ -2,6 +2,7 @@ import torch
 import re
 import cv2
 import numpy as np
+from torchvision.ops import box_convert
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer, util
 from groundingdino.util.inference import load_model, predict
@@ -62,15 +63,12 @@ class MyAgent(BaseAgent):
             text_threshold=TEXT_THRESHOLD
         )
 
-        _, W, H = image.size()
-        boxes_px = boxes.clone()
+        h, w, _ = image.shape
+        boxes = boxes * torch.Tensor([w, h, w, h])
+        xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
 
-        for index in range(3):
-            size = W if index % 2 == 0 else H
-            boxes_px[:, index] *= size
-
-        x0, y0 = [(boxes_px[:, 0] - boxes_px[:, 2] / 2).item(), (boxes_px[:, 1] - boxes_px[:, 3] / 2).item()]
-        x1, y1 = [(boxes_px[:, 0] + boxes_px[:, 2] / 2).item(), (boxes_px[:, 1] + boxes_px[:, 3] / 2).item()]
+        x0, y0, x1, y1 = xyxy[0]
+        print(xyxy)
 
         return image.crop((x0, y0, x1, y1))
 
@@ -89,7 +87,6 @@ class MyAgent(BaseAgent):
         if not result.endswith("."):
             result += "."
 
-        print(result)
         return result
 
     def clean_metadata(self, raw_data):
