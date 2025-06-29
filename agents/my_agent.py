@@ -182,7 +182,6 @@ class MyAgent(BaseAgent):
             prompts.append(prompt)
 
         outputs = self.llm(prompts)
-        print(outputs)
         answers = [output[0]["generated_text"].split("Answers:")[-1].strip() for output in outputs]
 
         return answers
