@@ -111,9 +111,14 @@ class MyAgent(BaseAgent):
             Output:
             """
         output = self.llm(prompt)
-        preprocess_responses = output[0]["generated_text"].split("Output:")[-1].strip()
-        preprocess_responses = preprocess_responses.split("\n")[0].split("To")[0].split(',')
-        return [response.strip() for response in preprocess_responses]
+        responses = output[0]["generated_text"].split("Output:")[-1].strip()
+        preprocessed_responses = responses.split("\n")[0].split("To")[0].split(',')
+        responses_list = [response.strip() for response in preprocessed_responses]
+
+        if responses_list[0] == '':
+            responses_list[0] = "item"
+
+        return responses_list
 
     def clean_metadata(self, raw_data):                                                   
         cleaned = {}
