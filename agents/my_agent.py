@@ -304,7 +304,7 @@ class MyAgent(BaseAgent):
                 User Question:
                 {query}
 
-                Answer it simple and short as possible with a maximal of 1 sentence. no explanations or ideas should be available.
+                No yapping, just answer the given question without any additional explanations or informations.
 
                 Answers:
             """
