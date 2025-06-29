@@ -111,7 +111,8 @@ class MyAgent(BaseAgent):
             Output:
             """
         output = self.llm(prompt)
-        return output[0]["generated_text"].split("Output:")[-1].strip().split("\n")[0].split(', ')
+        response = output[0]["generated_text"].split("Output:")[-1].strip()
+        return response.split("\n")[0].split("To ")[0].split(',')
 
     def clean_metadata(self, raw_data):                                                   
         cleaned = {}
