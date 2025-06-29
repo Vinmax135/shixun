@@ -43,9 +43,6 @@ class MyAgent(BaseAgent):
             max_new_tokens=16,
             do_sample=False
         )
-
-        # Model For Object Extract
-        self.object_extractor = spacy.load("en_core_web_sm")
     
     def get_batch_size(self) -> int:
         return BATCH_SIZE
@@ -170,12 +167,13 @@ class MyAgent(BaseAgent):
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
         for query, image in zip(queries, images):
+            print(query)
             main_objects = self.extract_object(query)
             print(main_objects)
             print("\n\n")
-            images = self.crop_images(image, main_objects)
+            cropped_images = self.crop_images(image, main_objects)
             images_datas = []
-            for each_image in images:
+            for each_image in cropped_images:
                 images_datas.append(self.search_pipeline(each_image, k=SEARCH_COUNT))
 
             for index, each_data in enumerate(images_datas):
