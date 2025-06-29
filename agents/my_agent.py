@@ -6,6 +6,7 @@ from torchvision.ops import box_convert
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer, util
 from groundingdino.util.inference import load_model, predict
+import groundingdino.datasets.transforms as T
 from agents.base_agent import BaseAgent
 
 # Constants
@@ -53,9 +54,18 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
+        transform = T.Compose(
+            [
+                T.RandomResize([800], max_size=1333),
+                T.ToTensor(),
+                T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
+        image_tensor = transform(image, None)
+
         boxes, logits, phrases = predict(
             model=self.visual_model,
-            image=image,
+            image=image_tensor,
             caption=query,
             box_threshold=BOX_THRESHOLD,
             text_threshold=TEXT_THRESHOLD
