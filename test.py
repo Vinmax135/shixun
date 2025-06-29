@@ -13,7 +13,7 @@ weight_path = "../GroundingDINO/groundingdino_swint_ogc.pth"
 
 model = load_model(config_path, weight_path)
 
-image_source, image = load_image(np.array(Image.open("./pre.png")))
+image_source, image = load_image("./pre.png")
 
 boxes, logits, phrases = predict(
             model=model,
