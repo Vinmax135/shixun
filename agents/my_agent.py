@@ -207,7 +207,18 @@ class MyAgent(BaseAgent):
         prompt = f"""
             Extract structured attributes from the following product description.
             Strictly return them as a JSON object with simple field names like 'price', 'engine', 'brand', 'use_case', etc. no explanations or ideas should exist in the output.
-            Put the answers in output below strictly with JSON format, if there are datas about link just ignore it, keep the value as short as possible and only parse important ones.
+            ---
+            Example 1:
+            Description:
+            \"\"\"This running shoe costs $120 and is ideal for marathons.\"\"\"
+            Output:
+            {
+            "price": "$120",
+            "use_case": "marathons"
+            }
+            ---
+            Only return a single JSON object.Do not repeat or invent fields not found in the description. No explanations. No story. Only important attribute-value pairs and keep the value as short as possible.
+            Put the answers in output below strictly with JSON format, if there are datas about link just ignore it.
             If the attribute is similar you can append it into one key
 
             Description:
