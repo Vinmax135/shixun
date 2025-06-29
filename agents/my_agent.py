@@ -1,5 +1,6 @@
 import torch
 import re
+import json
 from torchvision.ops import box_convert
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from groundingdino.util.inference import load_model, predict
@@ -8,7 +9,7 @@ from agents.base_agent import BaseAgent
 
 # Constants
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
-BATCH_SIZE = 10
+BATCH_SIZE = 15
 BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 1
@@ -36,7 +37,14 @@ class MyAgent(BaseAgent):
             LLM_MODEL_NAME,
             trust_remote_code=True,
         )
-        self.llm = pipeline(
+        self.llm_extract = pipeline(
+            "text2text-generation",
+            model=self.llm_model,
+            tokenizer=self.llm_tokenizer,
+            max_new_tokens=8,
+            do_sample=False
+        )
+        self.llm_generate = pipeline(
             "text-generation",
             model=self.llm_model,
             tokenizer=self.llm_tokenizer,
@@ -47,7 +55,7 @@ class MyAgent(BaseAgent):
     def get_batch_size(self) -> int:
         return BATCH_SIZE
     
-    def crop_images(self, image, objects):
+    def crop_images(self, image, objects):                                                      # Done
         cropped_images = []                                                       
         transform = T.Compose(
             [
@@ -75,11 +83,25 @@ class MyAgent(BaseAgent):
                 cropped_images.append(image.crop(xyxy[0]))
 
         if not len(cropped_images) > 0:
-            cropped_images.append(image)
+            boxes, logits, phrases = predict(
+                model=self.visual_model,
+                image=image_tensor,
+                caption="all objects",
+                box_threshold=BOX_THRESHOLD,
+                text_threshold=TEXT_THRESHOLD
+            )
+
+            boxes = boxes * torch.Tensor([w, h, w, h])
+            xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
+
+            if len(xyxy) > 0:
+                areas = [(x2 - x1) * (y2 - y1) for (x1, y1, x2, y2) in xyxy]
+                largest_idx = areas.index(max(areas))
+                cropped_images.append(image.crop(xyxy[largest_idx]))
 
         return cropped_images
 
-    def extract_object(self, query):  
+    def extract_object(self, query):                                                            # Done
         prompt = f"""
             You are a helpful AI assistant specialized in understanding user queries and guiding visual search.
             Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question.
@@ -110,7 +132,7 @@ class MyAgent(BaseAgent):
             User query: "{query}"
             Output:
             """
-        output = self.llm(prompt)
+        output = self.llm_extract(prompt)
         responses = output[0]["generated_text"].split("Output:")[-1].strip()
         preprocessed_responses = responses.split("\n")[0].split("To")[0].split(',')
         responses_list = [response.strip() for response in preprocessed_responses]
@@ -120,7 +142,7 @@ class MyAgent(BaseAgent):
 
         return responses_list
 
-    def clean_metadata(self, raw_data):                                                   
+    def clean_metadata(self, raw_data):                                                         # Done                           
         cleaned = {}
         ignored_keys = [
             "image", "image_size", "mapframe_wikidata", "coordinates",
@@ -138,6 +160,10 @@ class MyAgent(BaseAgent):
                 continue
 
             value = str(value)
+
+            if len(value) > 1000:
+                cleaned.update(self.paragraph_to_dict(value))
+                continue
 
             # Remove HTML
             value = re.sub(r'<.*?>', '', value)
@@ -166,10 +192,21 @@ class MyAgent(BaseAgent):
                 cleaned[key.replace("_", " ").lower()] = value
 
         return cleaned
+    
+    def paragraph_to_dict(self, text):
+        prompt = f"""
+            Extract structured attributes from the following product description.
+            Return them as a JSON object with simple field names like 'price', 'engine', 'brand', 'use_case', etc.
 
-    def summarize_data(self, image_data):                                                     
-        summarization = ", ".join(f"{k} is {v}" for k, v in image_data.items())
-        return summarization
+            Description:
+            \"\"\"
+            {text}
+            \"\"\"
+        """
+
+        output = self.llm_extract(prompt)
+        responses = output[0]["generated_text"]
+        return json.loads(responses)
 
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
@@ -186,7 +223,10 @@ class MyAgent(BaseAgent):
                 images_datas.append(self.search_pipeline(each_image, k=SEARCH_COUNT))
 
             for index, each_data in enumerate(images_datas):
-                images_datas[index] = self.summarize_data(self.clean_metadata(each_data[0]["entities"]))
+                images_datas[index] = self.clean_metadata(each_data[0]["entities"])
+                print("\n\n")
+                print(images_datas[index])
+                print("\n\n")
 
             information = "\n\n".join(images_datas)
 
@@ -200,7 +240,7 @@ class MyAgent(BaseAgent):
             )
             prompts.append(prompt)
 
-        outputs = self.llm(prompts)
+        outputs = self.llm_extract(prompts)
         answers = [output[0]["generated_text"].split("Answers:")[-1].strip().split("\n")[0] for output in outputs]
 
         return answers

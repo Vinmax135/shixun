@@ -481,7 +481,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--suppress-web-search-api",
-        action="store_true",
+        action="store_false",
         help="Suppress web search API when calling the agent"
     )
     parser.add_argument(
