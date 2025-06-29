@@ -228,19 +228,4 @@ class MyAgent(BaseAgent):
                 print(images_datas[index])
                 print("\n\n")
 
-            information = "\n\n".join(images_datas)
-
-            prompt = (
-                 "You are a helpful assistant which generates answer to the user question based on given information: \n"
-                f"{information} "
-                 "Answer the below question based on the given information as short and simple without any explanation, do not return full sentences " 
-                 "If the given information is not enough to answer the question, just say 'I don't know' "
-                f"\nUser Question: {query}"
-                 "\nAnswers:"
-            )
-            prompts.append(prompt)
-
-        outputs = self.llm_extract(prompts)
-        answers = [output[0]["generated_text"].split("Answers:")[-1].strip().split("\n")[0] for output in outputs]
-
-        return answers
+        return [query for query in queries]
