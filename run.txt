@@ -6,7 +6,7 @@ cd GroundingDINO
 
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-pip install -q -e .
+pip install -e .
 
 wget https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
 
@@ -21,7 +21,5 @@ pip install vllm==0.7.3
 pip install torch==2.6.0
 
 pip install torchvision==0.21.0
-
-python -m spacy download en_core_web_sm
 
 python local_evaluation.py

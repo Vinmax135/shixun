@@ -1,5 +1,7 @@
 import torch
 import re
+import cv2
+import numpy as np
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer, util
 from groundingdino.util.inference import load_model, predict
@@ -50,13 +52,27 @@ class MyAgent(BaseAgent):
         return BATCH_SIZE
     
     def crop_images(self, image, query):
+        image = cv2.cvtColor(np.array(image.convert("RGB")), cv2.COLOR_RGB2BGR)    
+
         boxes, logits, phrases = predict(
             model=self.visual_model,
             image=image,
             caption=query,
-            BOX_THRESHOLD=BOX_THRESHOLD,
-            TEXT_THRESHOLD=TEXT_THRESHOLD
+            box_threshold=BOX_THRESHOLD,
+            text_threshold=TEXT_THRESHOLD
         )
+
+        _, W, H = image.size()
+        boxes_px = boxes.clone()
+
+        for index in range(3):
+            size = W if index % 2 == 0 else H
+            boxes_px[:, index] *= size
+
+        x0, y0 = [(boxes_px[:, 0] - boxes_px[:, 2] / 2).item(), (boxes_px[:, 1] - boxes_px[:, 3] / 2).item()]
+        x1, y1 = [(boxes_px[:, 0] + boxes_px[:, 2] / 2).item(), (boxes_px[:, 1] + boxes_px[:, 3] / 2).item()]
+
+        return image.crop((x0, y0, x1, y1))
 
     def extract_object(self, query):
         prompt = (
