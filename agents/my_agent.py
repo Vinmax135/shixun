@@ -83,28 +83,16 @@ class MyAgent(BaseAgent):
         return cropped_images
 
     def extract_object(self, query):  
-        print(query)
+        print(f"\n\n {query}")
+        result = []
         object_extract = self.object_extractor(query)
-        object_list = [
-            chunk.text.strip()
-            for chunk in object_extract.noun_chunks
-            if chunk.root.pos_ != "PRON"
-        ]
-        print(f"\n\n{object_list}\n\n")
-                                              
-        prompt = (
-            "From the following list, return only the real-world physical objects — "
-            "things that can be seen, touched, or held. Exclude pronouns, ideas, brands, and abstract terms.\n"
-            "if there are none, return 'none'"
-            "Only return texts specified in input, no any explanations.\n"
-            ""
-            f"Input: {', '.join(object_list)}\nOutput:"
-        )
+        for token in object_extract:
+            if token.dep_ in ("dobj", "pobj", "attr") and token.pos_ == "NOUN":
+                modifiers = [child.text for child in token.children if child.dep_ == "amod"]
+                phrase = " ".join(modifiers + [token.text])
+                result.append(phrase.strip())
 
-        output = self.llm(prompt)[0]["generated_text"]
-        result = output.split("Output:")[-1].strip()
-
-        return result.split(", ")
+        return result
 
     def clean_metadata(self, raw_data):                                                   
         cleaned = {}
@@ -162,6 +150,7 @@ class MyAgent(BaseAgent):
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
             print(main_objects)
+            print("\n\n")
             images = self.crop_images(image, main_objects)
             images_datas = []
             for each_image in images:
