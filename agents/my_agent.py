@@ -15,7 +15,7 @@ LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 1
 BOX_THRESHOLD = 0.35
 TEXT_THRESHOLD = 0.25
-SEARCH_COUNT = 10
+SEARCH_COUNT = 1
 TOP_K = 3
 
 class MyAgent(BaseAgent):
@@ -54,7 +54,8 @@ class MyAgent(BaseAgent):
     def get_batch_size(self) -> int:
         return BATCH_SIZE
     
-    def crop_images(self, image, query):                                                        # Done
+    def crop_images(self, image, objects):
+        cropped_images = []                                                       
         transform = T.Compose(
             [
                 T.RandomResize([800], max_size=1333),
@@ -64,43 +65,43 @@ class MyAgent(BaseAgent):
         )
         image_tensor, _ = transform(image.convert("RGB"), None)
 
-        boxes, logits, phrases = predict(
-            model=self.visual_model,
-            image=image_tensor,
-            caption=query,
-            box_threshold=BOX_THRESHOLD,
-            text_threshold=TEXT_THRESHOLD
-        )
+        for main_object in objects:
+            boxes, logits, phrases = predict(
+                model=self.visual_model,
+                image=image_tensor,
+                caption=main_object,
+                box_threshold=BOX_THRESHOLD,
+                text_threshold=TEXT_THRESHOLD
+            )
 
-        w, h = image.size
-        boxes = boxes * torch.Tensor([w, h, w, h])
-        xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
+            w, h = image.size
+            boxes = boxes * torch.Tensor([w, h, w, h])
+            xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
 
-        if len(xyxy) > 0:
-            x0, y0, x1, y1 = xyxy[0]
-        else:
-            return image
+            if len(xyxy) > 0:
+                cropped_images.append(image.crop(xyxy[0]))
+            else:
+                cropped_images.append(image)
 
-        return image.crop((x0, y0, x1, y1))
+        return cropped_images
 
-    def extract_object(self, query):                                                            # Done
+    def extract_object(self, query):                                                         
         prompt = (
-            "Extract all real-world objects (like physical things) mentioned in this query. "
-            "Return them as a comma-separated list with no explanation, Do not return full sentences.\n"
-            f"Query: {query}\nObjects:"
+            "List all real-world physical objects with its attributes mentioned in the following query, "
+            "even if they are not the main focus of the question. "
+            "Return them as a comma-separated list with no explanation.\n"
+            "Examples:\n"
+            "Query: What is the brand of the red car?\nObjects: red car"
+            "Query: Can i throw the garbage into the left bin?\nObjects: garbage, left bin" 
+           f"Query: {query}\nObjects:"
         )
 
         output = self.llm(prompt)[0]["generated_text"]
         result = output.split("Objects:")[-1].strip()
 
-        # Optionally format result as 'x. y. z.'
-        result = result.replace("..", ".").strip()
-        if not result.endswith("."):
-            result += "."
+        return result.split(", ")
 
-        return result
-
-    def clean_metadata(self, raw_data):                                                         # Done
+    def clean_metadata(self, raw_data):                                                   
         cleaned = {}
         ignored_keys = [
             "image", "image_size", "mapframe_wikidata", "coordinates",
@@ -147,34 +148,28 @@ class MyAgent(BaseAgent):
 
         return cleaned
 
-    def summarize_data(self, image_data):                                                       # Done
-        summarization = "; ".join(f"{k} is {v}" for k, v in image_data.items())
+    def summarize_data(self, image_data):                                                     
+        summarization = ", ".join(f"{k} is {v}" for k, v in image_data.items())
         return summarization
-
-    def select_topk_datas(self, image_datas):                                                   # Done
-        return image_datas[:3]
 
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
-        i = 0
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
             print(main_objects)
-            image.save(f"test/pre{i}.png")
-            image = self.crop_images(image, main_objects)
-            image.save(f"test/post{i}.png")
-            i += 1
-            print(query)
-            image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
+            images = self.crop_images(image, main_objects)
+            images_datas = []
+            for each_image in images:
+                images_datas.append(self.search_pipeline(each_image, k=SEARCH_COUNT))
 
-            for index, each_data in enumerate(image_datas):
-                image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
-            
-            topk_datas = "; ".join(self.select_topk_datas(image_datas))
+            for index, each_data in enumerate(images_datas):
+                images_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
+
+            information = "\n\n".join(images_datas)
 
             prompt = (
-                 "You are a helpful assistant which generates answer to the user question based on given information: "
-                f"{topk_datas} "
+                 "You are a helpful assistant which generates answer to the user question based on given information: \n"
+                f"{information} "
                  "Answer the below question based on the given information as short and simple without any explanation, do not return full sentences " 
                  "If the given information is not enough to answer the question, just say 'I don't know' "
                 f"\nUser Question: {query}"
@@ -183,6 +178,6 @@ class MyAgent(BaseAgent):
             prompts.append(prompt)
 
         outputs = self.llm(prompts)
-        answers = [output[0]["generated_text"].split("Answers:")[-1].strip() for output in outputs]
+        answers = [output[0]["generated_text"].split("Answers:")[-1].strip().split("\n")[0] for output in outputs]
 
         return answers
