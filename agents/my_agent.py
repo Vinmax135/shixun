@@ -173,12 +173,16 @@ class MyAgent(BaseAgent):
 
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
+        i = 1
         for query, image in zip(queries, images):
-            print(query)
+            print(f"\t\t\t\t\t {i}")
+            print(f"\t\t\t\t\t {query}")
             main_objects = self.extract_object(query)
-            print(main_objects)
-            print("\n\n")
+            print(f"\t\t\t\t\t {main_objects}")
+            image.save(f"pre{i}")
             cropped_images = self.crop_images(image, main_objects)
+            image.save(f"post{i}")
+            i += 1
             images_datas = []
             for each_image in cropped_images:
                 images_datas.append(self.search_pipeline(each_image, k=SEARCH_COUNT))
