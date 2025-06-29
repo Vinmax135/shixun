@@ -106,7 +106,7 @@ class MyAgent(BaseAgent):
             User query: "How to wash it?"
             Output: item
             ---
-
+            When generating output, keep the answer as only objects separated with ',' without any explanation
             User query: "{query}"
             Output:
             """
