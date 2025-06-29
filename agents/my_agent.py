@@ -85,19 +85,20 @@ class MyAgent(BaseAgent):
 
         return cropped_images
 
-    def extract_object(self, query):                                                         
+    def extract_object(self, query):  
+        print(query)                                                       
         prompt = (
             "List all real-world physical objects mentioned in the following query, "
             "even if they are not the main focus of the question. "
-            "Return them as a comma-separated list with no explanation.\n"
+            "Return just the object name as a comma-separated list with no explanation.\n"
             "Examples:\n"
-            "Query: What is the brand of the red car?\nObjects: red car"
-            "Query: Can i throw the garbage into the left bin?\nObjects: garbage, left bin" 
+            "Query: What is the brand of the red car?\nObjects: red car\n"
+            "Query: Can i throw the garbage into the left bin?\nObjects: garbage, left bin\n"
            f"Query: {query}\nObjects:"
         )
 
         output = self.llm(prompt)[0]["generated_text"]
-        result = output.split("Objects:")[-1].strip().split("\n")[0]
+        result = output.split("Objects:")[-1].strip()
 
         return result.split(", ")
 
