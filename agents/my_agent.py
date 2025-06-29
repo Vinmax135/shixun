@@ -319,7 +319,7 @@ class MyAgent(BaseAgent):
 
         output = self.llm_generate(prompts)
         print(output)
-        response = [out[0]["generated_text"].split("Answers:")[-1].strip() for out in output]
+        response = [out[0]["generated_text"].split("Answers:")[-1].split("\n")[0].strip() for out in output]
 
         return response
     
