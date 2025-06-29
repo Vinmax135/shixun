@@ -7,6 +7,12 @@ from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from agents.base_agent import BaseAgent
 
+import nltk
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
+from nltk.corpus import wordnet as wn
+
 # Constants
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 1
@@ -88,9 +94,15 @@ class MyAgent(BaseAgent):
         object_extract = self.object_extractor(query)
         for token in object_extract:
             if token.dep_ in ("dobj", "pobj", "attr") and token.pos_ == "NOUN":
-                modifiers = [child.text for child in token.children if child.dep_ == "amod"]
-                phrase = " ".join(modifiers + [token.text])
-                result.append(phrase.strip())
+                synsets = wn.synsets(token.text.lower(), pos=wn.NOUN)
+                if not synsets:
+                    continue
+                physical_entity = wn.synset('physical_entity.n.01')
+                for syn in synsets:
+                    if physical_entity in syn.lowest_common_hypernyms(physical_entity):
+                        modifiers = [child.text for child in token.children if child.dep_ == "amod"]
+                        phrase = " ".join(modifiers + [token.text])
+                        result.append(phrase.strip())
 
         return result
 

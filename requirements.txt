@@ -20,3 +20,4 @@ opencv-python
 pillow
 huggingface-hub
 spacy
+nltk
