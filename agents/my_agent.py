@@ -217,7 +217,7 @@ class MyAgent(BaseAgent):
             ---
             Put the answers in output below strictly with JSON format, if there are datas about link just ignore it, keep the value as short as possible and only parse important ones.
             If the attribute is similar you can append it into one key
-            
+
             Description:
             \"\"\"
             {text}
@@ -227,9 +227,10 @@ class MyAgent(BaseAgent):
         """
 
         output = self.llm_extract_description(prompt)
-        responses = output[0]["generated_text"]
-        print(responses)
-        return json.loads(responses)
+        responses = output[0]["generated_text"].split("Output:")[-1]
+        preprocessed_responses = responses.split("{")[1].split("}")[0]
+        print(preprocessed_responses)
+        return json.loads(preprocessed_responses)
 
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
