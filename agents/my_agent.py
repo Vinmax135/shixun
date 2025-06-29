@@ -53,7 +53,7 @@ class MyAgent(BaseAgent):
     def get_batch_size(self) -> int:
         return BATCH_SIZE
     
-    def crop_images(self, image, query):
+    def crop_images(self, image, query):                                                        # Done
         transform = T.Compose(
             [
                 T.RandomResize([800], max_size=1333),
@@ -80,7 +80,7 @@ class MyAgent(BaseAgent):
 
         return image.crop((x0, y0, x1, y1))
 
-    def extract_object(self, query):
+    def extract_object(self, query):                                                            # Done
         prompt = (
             "Extract all real-world objects (like physical things) mentioned in this query. "
             "Return them as a comma-separated list with no explanation, Do not return full sentences.\n"
@@ -165,8 +165,10 @@ class MyAgent(BaseAgent):
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
             image = self.crop_images(image, main_objects)
-            image.save("test.png")
             image_datas = self.search_pipeline(image, k=SEARCH_COUNT)
+
+            with open("test.txt", "w") as temp:
+                temp.write(image_datas)
 
             for index, each_data in enumerate(image_datas):
                 image_datas[index] = self.summarize_data(self.clean_metadata(each_data["entities"]))
