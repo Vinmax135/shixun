@@ -275,14 +275,13 @@ class MyAgent(BaseAgent):
                 images_datas.append(possibly_true_data)
 
             print(images_datas)
-            search_prompt = query
-            for index, each_object in enumerate(main_objects):
-                replace_text = images_datas[index]["name"] + " " + (each_object if not each_object == "item" else "")
-                search_prompt = search_prompt.replace(each_object, replace_text)
-            search_prompt.strip()
             
-            text_search = self.search_pipeline(search_prompt, k=1)
-            print(text_search)
+            text_datas = []
+            for each_data in images_datas:
+                prompt = "What to know about " + each_data["name"]
+                text_search = self.search_pipeline(prompt, k=1)
+                text_datas.append(text_search)
+            print(text_datas)
 
             image_search = ""
             for each_data in images_datas:
@@ -303,7 +302,7 @@ class MyAgent(BaseAgent):
             """
             prompts.append(prompt)
 
-        print(self.llm_generate(prompts)[0]["generated_text"])
+        print(self.llm_generate(prompts))
 
         return [query for query in queries]
     
