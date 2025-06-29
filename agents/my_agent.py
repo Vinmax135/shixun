@@ -10,7 +10,7 @@ from agents.base_agent import BaseAgent
 
 # Constants
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
-BATCH_SIZE = 15
+BATCH_SIZE = 5
 BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 5
@@ -251,9 +251,14 @@ class MyAgent(BaseAgent):
             reranked.append(util.cos_sim(query_emb, data_emb).item())
 
         return image_data[reranked.index(max(reranked))]
+    
+    def summarize_data(self, image_data):                                                     
+        summarization = ", ".join(f"{k} is {str(v)}" for k, v in image_data.items())
+        return summarization
 
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
+
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
             cropped_images = self.crop_images(image, main_objects)
@@ -263,17 +268,39 @@ class MyAgent(BaseAgent):
                 raw_data = self.search_pipeline(each_image, k=SEARCH_COUNT)
 
                 cleaned_datas = []
-                print("\n\n")
-                print(raw_data)
-
                 for each_data in raw_data:
                     cleaned_datas.append(self.clean_metadata(each_data["entities"]))
                 
                 possibly_true_data = self.rerank(cleaned_datas, query)
-
-                print("\n\n")
-                print(possibly_true_data)
-                print("\n\n")
                 images_datas.append(possibly_true_data)
 
+            search_prompt = query
+            for index, each_object in enumerate(main_objects):
+                replace_text = images_datas[index]["name"] + (each_object if not each_object == "item" else "")
+                search_prompt.replace(each_object, replace_text)
+            
+            text_search = self.search_pipeline(search_prompt, k=1)[0]["page_snippet"]
+
+            image_search = ""
+            for each_data in images_datas:
+                image_search += "\n\n" + self.summarize_data(each_data)
+
+            image_search = image_search.strip()
+        
+            prompt = f"""
+                You are a helpful assistant that is great at answer user question based on following information:
+                {image_search}
+
+                {text_search}
+
+                User Question:
+                {query}
+
+                Answers:
+            """
+            prompts.append(prompt)
+
+        print(self.llm_generate(prompts)[0]["generated_text"])
+
         return [query for query in queries]
+    
