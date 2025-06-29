@@ -274,6 +274,7 @@ class MyAgent(BaseAgent):
                 possibly_true_data = self.rerank(cleaned_datas, query)
                 images_datas.append(possibly_true_data)
 
+            print(images_datas)
             search_prompt = query
             for index, each_object in enumerate(main_objects):
                 replace_text = images_datas[index]["name"] + (each_object if not each_object == "item" else "")
