@@ -215,7 +215,7 @@ class MyAgent(BaseAgent):
             founder: Frank Yang,
             ...
             ---
-            Put answers in the output below strictly with JSON format, if there are datas about link just ignore it.
+            Put answers in the output below strictly with JSON format, if there are datas about link just ignore it, keep the value as short as possible and only parse important ones.
 
             Description:
             \"\"\"
