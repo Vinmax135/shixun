@@ -8,7 +8,3 @@ doc = nlp(text)
 for token in doc:
     if token.dep_ in ("dobj", "pobj", "attr") and token.pos_ == "NOUN":
         print(token.text)
-# fallback
-for chunk in doc.noun_chunks:
-    if chunk.root.pos_ == "NOUN":
-        print(chunk.text)
