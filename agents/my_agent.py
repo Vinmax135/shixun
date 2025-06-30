@@ -272,6 +272,7 @@ class MyAgent(BaseAgent):
 
             images_datas = []
             for each_image in cropped_images:
+                print(main_objects)
                 raw_data = self.search_pipeline(each_image, k=SEARCH_COUNT)
 
                 cleaned_datas = []
