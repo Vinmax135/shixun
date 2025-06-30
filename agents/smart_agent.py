@@ -13,7 +13,7 @@ from crag_web_result_fetcher import WebSearchResult
 
 # Constants
 VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"  # Fits 5-8GB range
-BATCH_SIZE = 7
+BATCH_SIZE = 2
 BOX_THRESHOLD = 0.35
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 10
@@ -52,7 +52,6 @@ class SmartAgent(BaseAgent):
         with torch.no_grad():
             outputs = self.vision_model.generate(**inputs, max_new_tokens=8)
         text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0]
-        print(text)
         objects = [obj.strip() for obj in text.split("Answer:")[-1].split(',') if obj.strip()]
         return objects or ["item"]
 
@@ -128,7 +127,7 @@ class SmartAgent(BaseAgent):
 
     def batch_generate_response(self, queries: List[str], images: List[Image.Image], message_histories=None) -> List[str]:
         responses = []
-        
+
         for query, image in zip(queries, images):
             objects = self.extract_objects_from_query(image, query)
             cropped_images = self.crop_images(image, objects)
