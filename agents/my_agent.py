@@ -6,6 +6,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
+from jsonrepair import repair_json
 from agents.base_agent import BaseAgent
 
 # Constants
@@ -239,8 +240,12 @@ class MyAgent(BaseAgent):
         output = self.llm_extract_description(prompt)
         responses = output[0]["generated_text"].split("Output:")[-1]
         preprocessed_responses = "{" + responses.split("{")[1].split("}")[0].strip() + "}"
-        print(preprocessed_responses)
-        return json.loads(preprocessed_responses)
+        preprocessed_responses = repair_json(preprocessed_responses)
+        try:
+            return_responses = json.loads(preprocessed_responses)
+        except:
+            return_responses = ("description", text)
+        return return_responses
 
     def rerank(self, image_data, query):
         query_emb = self.semantic.encode(query, convert_to_tensor=True)

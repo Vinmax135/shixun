@@ -1,7 +1,7 @@
 from cragmm_search.search import UnifiedSearchPipeline
 from crag_image_loader import ImageLoader
 
-search_api_text_model_name = "sentence-transformers/all-MiniLM-L6-v2"
+search_api_text_model_name = "Qwen/Qwen1.5-0.5B-Chat"
 search_api_image_model_name = "openai/clip-vit-large-patch14-336"
 search_api_web_hf_dataset_id = "crag-mm-2025/web-search-index-validation"
 search_api_image_hf_dataset_id = "crag-mm-2025/image-search-index-validation"
