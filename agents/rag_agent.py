@@ -34,7 +34,17 @@ class SimpleRAGAgent(BaseAgent):
     def initialize_models(self):
         print(f"Initializing {self.model_name} with transformers...")
         self.processor = AutoProcessor.from_pretrained(self.model_name, trust_remote_code=True)
-        self.llm = AutoModelForVision2Seq.from_pretrained(self.model_name, trust_remote_code=True).eval().cuda()
+        self.llm = AutoModelForVision2Seq.from_pretrained(
+            self.model_name,
+            trust_remote_code=True,
+            device_map="auto",              
+            offload_folder="./offload",    
+            offload_state_dict=True,        
+            torch_dtype=torch.float16       
+        ).eval()
+
+        if torch.cuda.is_available():
+            self.llm.to("cuda")
         print("Models loaded successfully")
 
     def get_batch_size(self) -> int:
