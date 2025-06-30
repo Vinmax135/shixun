@@ -146,11 +146,12 @@ class SmartAgent(BaseAgent):
             prompt = (
                 "<|system|>\nYou are a helpful assistant answering based on visual content and extra information.\n"
                 f"<|user|>\nImage summary: {image_summary}\nMetadata: {best_context}\nQuestion: {query}\n<|image|>"
+                "Answer:"
             )
             inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
             with torch.no_grad():
                 outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATED_TOKENS)
-            answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+            answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].split("Answer:")[-1].strip()
             responses.append(answer)
 
         return responses
