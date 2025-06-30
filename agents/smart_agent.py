@@ -30,18 +30,18 @@ class SmartAgent(BaseAgent):
         self.vision_processor = Blip2Processor.from_pretrained(VISION_MODEL_NAME)
         self.vision_model = Blip2ForConditionalGeneration.from_pretrained(
             VISION_MODEL_NAME,
-            device_map="cpu",              
+            device_map="auto",              
             offload_folder="./offload_vlm", 
             trust_remote_code=True,
             torch_dtype=torch.float16
-            ).eval()
+            ).eval().cuda()
 
     def get_batch_size(self):
         return BATCH_SIZE
 
     def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
         prompt = f"Based on the image and the question '{query}', return just the list of the key visual objects to identify without explanation. Separate with commas. Answers:"
-        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to("cpu")
+        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
         with torch.no_grad():
             outputs = self.vision_model.generate(**inputs, max_new_tokens=64)
         text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0]
@@ -70,7 +70,7 @@ class SmartAgent(BaseAgent):
 
     def summarize_image(self, image: Image.Image) -> str:
         prompt = "Summarize the image in one sentence."
-        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to("cpu")
+        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
         outputs = self.vision_model.generate(**inputs, max_new_tokens=30)
         return self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
 

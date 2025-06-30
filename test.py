@@ -1,18 +1,23 @@
-from cragmm_search.search import UnifiedSearchPipeline
-from crag_image_loader import ImageLoader
+from PIL import Image
+from transformers import Blip2Processor, Blip2ForConditionalGeneration
+import torch
 
-search_api_text_model_name = "Qwen/Qwen1.5-0.5B-Chat"
-search_api_image_model_name = "openai/clip-vit-large-patch14-336"
-search_api_web_hf_dataset_id = "crag-mm-2025/web-search-index-validation"
-search_api_image_hf_dataset_id = "crag-mm-2025/image-search-index-validation"
+image = Image.open("pre.png")
 
-search_pipeline = UnifiedSearchPipeline(
-    text_model_name=search_api_text_model_name,
-    image_model_name=search_api_image_model_name,
-    web_hf_dataset_id=search_api_web_hf_dataset_id,
-    image_hf_dataset_id=search_api_image_hf_dataset_id,
-)
+VISION_MODEL_NAME = "Salesforce/blip2-opt-2.7b"
 
-query = "vespa gts super 300?"
+vision_processor = Blip2Processor.from_pretrained(VISION_MODEL_NAME)
+vision_model = Blip2ForConditionalGeneration.from_pretrained(
+VISION_MODEL_NAME,
+device_map="auto",              
+offload_folder="./offload_vlm", 
+trust_remote_code=True,
+torch_dtype=torch.float16
+).eval().cuda()
 
-print(search_pipeline(query))
+prompt = f"Summarize this images."
+inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
+with torch.no_grad():
+    outputs = vision_model.generate(**inputs, max_new_tokens=64)
+text = vision_processor.batch_decode(outputs, skip_special_tokens=True)[0]
+print(text)
