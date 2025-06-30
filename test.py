@@ -18,10 +18,10 @@ torch_dtype=torch.float16
 query = "Can i throw batteries in the left bin?"
 
 prompt = (
-            f"Given an image and a query '{query}', as a helpful assistant, what objects do you think in this image i should search for to get the answer? return only the object name separated by a comma"
+            f"Given an image and a query '{query}', as a helpful assistant, what objects do you think in this image i should get the information to get the answer? return only the object name separated by a comma"
         )
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
-    outputs = vision_model.generate(**inputs, max_new_tokens=8)
+    outputs = vision_model.generate(**inputs, max_new_tokens=16)
 text = vision_processor.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 print(text)
