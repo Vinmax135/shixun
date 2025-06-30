@@ -11,7 +11,7 @@ from agents.base_agent import BaseAgent
 
 # Constants
 LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
-BATCH_SIZE = 5
+BATCH_SIZE = 1
 BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 5
