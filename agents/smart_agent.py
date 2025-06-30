@@ -73,12 +73,32 @@ class SmartAgent(BaseAgent):
             if len(xyxy) > 0:
                 cropped_images.append(image.crop(xyxy[0]))
 
+        if not len(cropped_images) > 0:
+            boxes, logits, phrases = predict(
+                model=self.visual_model,
+                image=image_tensor,
+                caption="all objects",
+                box_threshold=BOX_THRESHOLD,
+                text_threshold=TEXT_THRESHOLD
+            )
+
+            boxes = boxes * torch.Tensor([w, h, w, h])
+            xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
+
+            if len(xyxy) > 0:
+                areas = [(x2 - x1) * (y2 - y1) for (x1, y1, x2, y2) in xyxy]
+                largest_idx = areas.index(max(areas))
+                cropped_images.append(image.crop(xyxy[largest_idx]))
+            
+        if not len(cropped_images) > 0:
+            cropped_images.append(image)
+
         return cropped_images or [image]
 
     def summarize_image(self, image: Image.Image) -> str:
         prompt = "Summarize the image in one sentence."
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-        outputs = self.vision_model.generate(**inputs, max_new_tokens=16)
+        outputs = self.vision_model.generate(**inputs, max_new_tokens=128)
         return self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
 
     def clean_metadata(self, raw_data: List[Dict[str, Any]]) -> Dict[str, str]:
@@ -108,24 +128,18 @@ class SmartAgent(BaseAgent):
 
     def batch_generate_response(self, queries: List[str], images: List[Image.Image], message_histories=None) -> List[str]:
         responses = []
-        i = 1
+        
         for query, image in zip(queries, images):
-            """
             objects = self.extract_objects_from_query(image, query)
             cropped_images = self.crop_images(image, objects)
-            cropped_images[0].save(f"test/post{i}.png")
-            i += 1
-            print(objects)
 
             candidates = []
             for cropped in cropped_images:
                 results = self.search_pipeline(cropped, k=SEARCH_COUNT)
                 cleaned = [self.clean_metadata(res["entities"]) for res in results if "entities" in res and res["entities"]]
                 candidates.extend(cleaned)
-            """
-            image_summary = self.summarize_image(image)
-            print(image_summary)
-            """
+
+            image_summary = self.summarize_image(cropped_images)
             text_summaries = [self.summarize_data(c) for c in candidates]
 
             if not text_summaries:
@@ -135,7 +149,6 @@ class SmartAgent(BaseAgent):
             best_idx = self.rerank(image_summary, text_summaries)
             best_context = text_summaries[best_idx]
 
-            # Final query for web search
             search_query = f"{query} {best_context}"
             web_results = self.search_pipeline(search_query, k=3)
 
@@ -144,5 +157,4 @@ class SmartAgent(BaseAgent):
             outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATED_TOKENS)
             answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
             responses.append(answer)
-            """
-        return queries
+        return responses
