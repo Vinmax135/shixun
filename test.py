@@ -19,5 +19,5 @@ prompt = f"Summarize this images."
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
     outputs = vision_model.generate(**inputs, max_new_tokens=64)
-text = vision_processor.batch_decode(outputs, skip_special_tokens=True)
+text = vision_processor.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 print(text)
