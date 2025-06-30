@@ -18,7 +18,7 @@ class SimpleRAGAgent(BaseAgent):
     def __init__(
         self,
         search_pipeline: UnifiedSearchPipeline,
-        model_name: str = "Qwen/Qwen-VL-Chat-7B",
+        model_name: str = "Qwen/Qwen-VL-7B-Instruct",
         max_gen_len: int = 64
     ):
         super().__init__(search_pipeline)
