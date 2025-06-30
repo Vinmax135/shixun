@@ -270,7 +270,7 @@ class MyAgent(BaseAgent):
             main_objects = self.extract_object(query)
             image.save(f"test/pre{i}.png")
             cropped_images = self.crop_images(image, main_objects)
-            cropped_images.save(f"test/post{i}.png")
+            cropped_images[0].save(f"test/post{i}.png")
             i += 1
 
             images_datas = []
