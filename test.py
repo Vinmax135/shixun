@@ -4,7 +4,7 @@ import torch
 
 image = Image.open("pre.png")
 
-VISION_MODEL_NAME = "Salesforce/blip2-opt-2.7b"
+VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"
 
 vision_processor = Blip2Processor.from_pretrained(VISION_MODEL_NAME)
 vision_model = Blip2ForConditionalGeneration.from_pretrained(
