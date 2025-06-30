@@ -12,7 +12,7 @@ from agents.base_agent import BaseAgent
 from crag_web_result_fetcher import WebSearchResult
 
 # Constants
-VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"  # Fits 5-8GB range
+VISION_MODEL_NAME = "meta-llama/Llama-3.2-11B-Vision-Instruct"  # Fits 5-8GB range
 BATCH_SIZE = 2
 BOX_THRESHOLD = 0.35
 TEXT_THRESHOLD = 0.25

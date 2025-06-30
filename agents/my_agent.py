@@ -287,11 +287,8 @@ class MyAgent(BaseAgent):
 
                 possibly_true_data = self.rerank(cleaned_datas, query)
                 images_datas.append(possibly_true_data)
-            
-            for each in images_datas:
-                print(each, end="\n\n")
 
             prompt = """
-
+                
             """
         return None
