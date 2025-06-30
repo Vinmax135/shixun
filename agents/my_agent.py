@@ -231,7 +231,7 @@ class MyAgent(BaseAgent):
             }
 
             Now extract attributes from this:
-            """ + {text} + """
+            """ + {str(text)} + """
 
             Output:
         """
