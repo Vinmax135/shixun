@@ -278,6 +278,9 @@ class MyAgent(BaseAgent):
                 for each_data in raw_data:
                     cleaned_datas.append(self.clean_metadata(each_data["entities"]))
                 
+                for each in cleaned_datas:
+                    print(each, end="\n\n")
+
                 possibly_true_data = self.rerank(cleaned_datas, query)
                 images_datas.append(possibly_true_data)
             
