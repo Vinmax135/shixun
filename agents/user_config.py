@@ -1,5 +1,5 @@
-from agents.smart_agent import SmartAgent
+from agents.vanilla_llama_vision_agent import LlamaVisionModel
 
 # UserAgent = RandomAgent
-UserAgent = SmartAgent
-# UserAgent = LlamaVisionModel
+
+UserAgent = LlamaVisionModel
