@@ -48,7 +48,7 @@ class MyAgent(BaseAgent):
             "text-generation",
             model=self.llm_model,
             tokenizer=self.llm_tokenizer,
-            max_new_tokens=512,
+            max_new_tokens=256,
             do_sample=False
         )
         self.llm_generate = pipeline(
@@ -272,46 +272,41 @@ class MyAgent(BaseAgent):
                 
                 possibly_true_data = self.rerank(cleaned_datas, query)
                 images_datas.append(possibly_true_data)
-            
+            """          
             text_datas = []
             for each_data in images_datas:
                 prompt = "What to know about " + each_data["name"]
                 text_search_results = self.search_pipeline(prompt, k=1)
                 text_datas.append(text_search_results[0])
-
+            """
             image_search = ""
             for each_data in images_datas:
                 image_search += "\n\n" + self.summarize_data(each_data)
 
             image_search = image_search.strip()
-
+            """
             text_search = ""
             for each in text_datas:
                 if each["score"] > 0.75:
                     text_search += "\n\n" + each["page_snippets"]
             
             text_search = text_search.strip()
-        
+            """
             prompt = f"""
             You are a helpful assistant that answers user questions based on two information sources:
 
-            1.  **Image-based Search Results**:
+            1.  Image-based Search Results:
             These are facts extracted from objects in the image the user is asking about. This may include brand, ingredients, calories, or visual traits.
 
             {image_search}
 
-            2.  **Web-based Text Search Results**:
-            These are retrieved based on the user\'s question. This might include general knowledge or common answers from the web.
-
-            {text_search}
-
             ---
 
-             **Task**:
-            Use both sources to answer the following user question as accurately and simple as possible. If the answer is not available, say "I don't know."
+            Task:
+            Use sources to answer the following user question as accurately and simple as possible. If the answer is not available, say "I don't know."
             Do not reply with any explanations, ideas or additional informations, just the answer for the query
 
-            **User Question**:
+            User Question:
             {query}
 
             Answers:"""
