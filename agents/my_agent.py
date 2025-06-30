@@ -222,6 +222,7 @@ class MyAgent(BaseAgent):
             Only include attributes that can be confidently extracted from the text. 
             Do not include null values or empty lists. 
             Return only with a valid JSON format, nothing else.
+            Remember to close any data when parsing, such as when using [ dont forget to put ] after it is done
 
             Description:
             \"\"\"""" + \
