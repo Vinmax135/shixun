@@ -2,7 +2,7 @@ from PIL import Image
 from transformers import Blip2Processor, Blip2ForConditionalGeneration
 import torch
 
-image = Image.open("pre.png")
+image = Image.open("test/post1.png")
 
 VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"
 
