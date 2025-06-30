@@ -15,9 +15,12 @@ trust_remote_code=True,
 torch_dtype=torch.float16
 ).eval().cuda()
 
-prompt = f"Summarize this images."
+prompt = (
+            f"Based on the image and the question 'How much is this scooter costs', list ONLY the key visual objects present, "
+            "SEPARATED BY COMMAS, no explanation. For example: car, tree, person\nAnswer:"
+        )
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
-    outputs = vision_model.generate(**inputs, max_new_tokens=64)
+    outputs = vision_model.generate(**inputs, max_new_tokens=8)
 text = vision_processor.tokenizer.batch_decode(outputs, skip_special_tokens=True)
 print(text)
