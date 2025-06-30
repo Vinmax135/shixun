@@ -4,7 +4,7 @@ import re
 import json
 from PIL import Image
 from torchvision.ops import box_convert
-from transformers import pipeline, AutoTokenizer, AutoProcessor, AutoModelForVision2Seq
+from transformers import Blip2Processor, Blip2ForConditionalGeneration
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
@@ -27,8 +27,8 @@ class SmartAgent(BaseAgent):
             "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py",
             "../GroundingDINO/groundingdino_swint_ogc.pth"
         )
-        self.vision_processor = AutoProcessor.from_pretrained(VISION_MODEL_NAME)
-        self.vision_model = AutoModelForVision2Seq.from_pretrained(
+        self.vision_processor = Blip2Processor.from_pretrained(VISION_MODEL_NAME)
+        self.vision_model = Blip2ForConditionalGeneration.from_pretrained(
             VISION_MODEL_NAME,
             device_map="auto",              
             offload_folder="./offload_vlm", 
@@ -42,8 +42,9 @@ class SmartAgent(BaseAgent):
     def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
         prompt = f"Based on the image and the question '{query}', return just the list of the key visual objects to identify without explanation. Separate with commas. Answers:"
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-        outputs = self.vision_model.generate(**inputs, max_new_tokens=64)
-        text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)
+        with torch.no_grad():
+            outputs = self.vision_model.generate(**inputs, max_new_tokens=64)
+        text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0]
         print(text)
         objects = [obj.strip() for obj in text.split("Answer:")[-1].split(',') if obj.strip()]
         return objects or ["item"]
