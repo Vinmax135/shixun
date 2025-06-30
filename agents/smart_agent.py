@@ -8,6 +8,7 @@ from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
 from agents.base_agent import BaseAgent
+from vllm import SamplingParams
 from crag_web_result_fetcher import WebSearchResult
 import vllm
 
@@ -60,12 +61,12 @@ class SmartAgent(BaseAgent):
 
         full_prompt = f"<|system|>\n{system_prompt}\n<|user|>\nQuery: {query}\n<|image|>\n"
 
-        output = self.llm.generate(
-            prompts=[{"prompt": full_prompt, "image": image}]
-        )[0]["generated_text"]
-
-        # Postprocess to extract clean object list
-        text = output.strip()
+        sampling_params = SamplingParams(max_tokens=16)
+        result = self.llm.generate(
+            prompts={"prompt": full_prompt, "image": image},
+            sampling_params=sampling_params
+        )
+        text = result.outputs[0].text.strip()
         objects = [obj.strip() for obj in re.split(r"[,\n]", text) if obj.strip()]
         return objects or ["item"]
 
@@ -113,10 +114,12 @@ class SmartAgent(BaseAgent):
             "<|system|>\nYou are a helpful assistant. Describe the image in detail.\n"
             "<|user|>\n<|image|>\n"
         )
-        output = self.llm.generate(
-            prompts=[{"prompt": prompt, "image": image}],
-        )[0]["generated_text"]
-        return output.strip()
+        sampling_params = SamplingParams(max_tokens=128)
+        result = self.llm.generate(
+            prompts={"prompt": prompt, "image": image},
+            sampling_params=sampling_params
+        )
+        return result.outputs[0].text.strip()
 
     def clean_metadata(self, raw_data: List[Dict[str, Any]]) -> Dict[str, str]:
         raw_data = raw_data[0]
@@ -173,9 +176,11 @@ class SmartAgent(BaseAgent):
                 "<|system|>\nYou are a helpful assistant answering based on visual content and extra information.\n"
                 f"<|user|>\nImage summary: {image_summary}\nMetadata: {best_context}\nQuestion: {query}\n<|image|>\n"
             )
-            output = self.llm.generate(
-                prompts=[{"prompt": prompt, "image": image}]
-            )[0]["generated_text"]
-            answer = output.strip()
+            sampling_params = SamplingParams(max_tokens=MAX_GENERATED_TOKENS)
+            result = self.llm.generate(
+                prompts={"prompt": prompt, "image": image},
+                sampling_params=sampling_params
+            )
+            answer = result.outputs[0].text.strip()
             responses.append(answer)
         return responses
