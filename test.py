@@ -16,7 +16,7 @@ torch_dtype=torch.float16
 ).eval().cuda()
 
 prompt = (
-            f"Based on the image and the question 'How much is this scooter costs', list ONLY the key visual objects present, "
+            f"Based on the image and the question 'How much is this scooter costs', list objects i should check for to answer the question, "
             "SEPARATED BY COMMAS, no explanation. For example: car, tree, person\nAnswer:"
         )
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
