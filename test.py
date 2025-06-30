@@ -18,14 +18,7 @@ torch_dtype=torch.float16
 query = "Can i throw batteries in the left bin?"
 
 prompt = (
-            "You are a helpful AI assistant specialized in understanding user queries and guiding visual search."
-            "Your task is: Given an image and a user question, identify the key visual objects and their specific attributes that need to be visually located in the image in order to answer the question."
-            "Only include physically visible, nameable items — such as objects, labels, signs, or container types — that are explicitly mentioned or implied in the question and that can be found visually in the image."
-            "Ignore non-visual concepts like 'cost', 'price', 'calories', and ignore vague references like 'this', 'it', or abstract actions. Focus only on visually grounded items."
-            "Output a comma-separated list of objects with attributes if relevant. Do not include explanations."
-            "You are only permitted to return noun and adjective words."
-            f"Query: {query}"
-            "Answer:"
+            f"Given an image and a query '{query}', as a helpful assistant, what objects do you think in this image i should search for to get the answer? return only the object name separated by a comma"
         )
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
