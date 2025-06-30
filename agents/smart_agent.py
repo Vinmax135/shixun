@@ -8,7 +8,6 @@ from transformers import pipeline, AutoTokenizer, AutoProcessor, AutoModelForVis
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
-from json_repair import repair_json
 from agents.base_agent import BaseAgent
 from crag_web_result_fetcher import WebSearchResult
 
@@ -105,9 +104,6 @@ class SmartAgent(BaseAgent):
         responses = []
         for query, image in zip(queries, images):
             objects = self.extract_objects_from_query(image, query)
-
-            print(objects)
-            """
             cropped_images = self.crop_images(image, objects)
 
             candidates = []
@@ -132,8 +128,8 @@ class SmartAgent(BaseAgent):
 
             prompt = f"You are given the image summary: '{image_summary}' and the info: '{best_context}'. Answer this question: '{query}'."
             inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-            outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATION_TOKENS)
+            outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATED_TOKENS)
             answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
             responses.append(answer)
-            """
-        return queries
+
+        return responses
