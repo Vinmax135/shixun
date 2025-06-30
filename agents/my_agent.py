@@ -49,7 +49,7 @@ class MyAgent(BaseAgent):
             "text-generation",
             model=self.llm_model,
             tokenizer=self.llm_tokenizer,
-            max_new_tokens=256,
+            max_new_tokens=128,
             do_sample=False
         )
         self.llm_generate = pipeline(
