@@ -40,7 +40,10 @@ class SmartAgent(BaseAgent):
         return BATCH_SIZE
 
     def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
-        prompt = f"Based on the image and the question '{query}', return just the list of the key visual objects to identify without explanation. Separate with commas. Answers:"
+        prompt = f"""
+            Based on the image and the question '{query}', 
+            list only the key visual objects present, separated by commas,
+            with no explanation or additional text. Answer:"""
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
         with torch.no_grad():
             outputs = self.vision_model.generate(**inputs, max_new_tokens=64)
