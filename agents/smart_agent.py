@@ -13,7 +13,7 @@ from crag_web_result_fetcher import WebSearchResult
 
 # Constants
 VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"  # Fits 5-8GB range
-BATCH_SIZE = 1
+BATCH_SIZE = 7
 BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 10
@@ -104,9 +104,12 @@ class SmartAgent(BaseAgent):
 
     def batch_generate_response(self, queries: List[str], images: List[Image.Image], message_histories=None) -> List[str]:
         responses = []
+        i = 1
         for query, image in zip(queries, images):
             objects = self.extract_objects_from_query(image, query)
             cropped_images = self.crop_images(image, objects)
+            cropped_images.save(f"test/post{i}.png")
+            i += 1
 
             candidates = []
             for cropped in cropped_images:
