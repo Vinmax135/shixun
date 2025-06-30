@@ -66,7 +66,7 @@ class SmartAgent(BaseAgent):
             prompts={"prompt": full_prompt, "image": image},
             sampling_params=sampling_params
         )
-        text = result.outputs[0].text.strip()
+        text = result[0].text.strip()
         objects = [obj.strip() for obj in re.split(r"[,\n]", text) if obj.strip()]
         return objects or ["item"]
 
@@ -119,7 +119,7 @@ class SmartAgent(BaseAgent):
             prompts={"prompt": prompt, "image": image},
             sampling_params=sampling_params
         )
-        return result.outputs[0].text.strip()
+        return result[0].text.strip()
 
     def clean_metadata(self, raw_data: List[Dict[str, Any]]) -> Dict[str, str]:
         raw_data = raw_data[0]
@@ -181,6 +181,6 @@ class SmartAgent(BaseAgent):
                 prompts={"prompt": prompt, "image": image},
                 sampling_params=sampling_params
             )
-            answer = result.outputs[0].text.strip()
+            answer = result[0].text.strip()
             responses.append(answer)
         return responses
