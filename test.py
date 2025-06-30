@@ -18,7 +18,7 @@ torch_dtype=torch.float16
 query = "Can i throw batteries in the left bin?"
 
 prompt = f"""
-            You are a helpful assistant, describe this image, make sure those are the key points of the given image.
+            You are a helpful assistant, describe this image as long as you can, make sure those are the key points of the given image.
         """
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
