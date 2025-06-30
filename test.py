@@ -13,6 +13,6 @@ search_pipeline = UnifiedSearchPipeline(
     image_hf_dataset_id=search_api_image_hf_dataset_id,
 )
 
-query = "What is the cost of vespa gts super 300?"
+query = "vespa gts super 300?"
 
 print(search_pipeline(query))

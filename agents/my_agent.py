@@ -234,6 +234,7 @@ class MyAgent(BaseAgent):
         output = self.llm_extract_description(prompt)
         responses = output[0]["generated_text"].split("Output:")[-1]
         preprocessed_responses = "{" + responses.split("{")[1].split("}")[0].strip() + "}"
+        print(preprocessed_responses)
         return json.loads(preprocessed_responses)
 
     def rerank(self, image_data, query):
