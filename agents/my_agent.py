@@ -172,11 +172,11 @@ class MyAgent(BaseAgent):
                 continue
 
             value = str(value)
-
+            """
             if len(value) > 500:
                 cleaned.update(self.paragraph_to_dict(value))
                 continue
-
+            """
             # Remove HTML
             value = re.sub(r'<.*?>', '', value)
 

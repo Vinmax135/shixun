@@ -1,6 +1,5 @@
-from agents.my_agent import MyAgent
+from agents.rag_agent import SimpleRAGAgent
 
 # UserAgent = RandomAgent
-# UserAgent = SimpleRAGAgent
+UserAgent = SimpleRAGAgent
 # UserAgent = LlamaVisionModel
-UserAgent = MyAgent
