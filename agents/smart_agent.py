@@ -104,7 +104,7 @@ class SmartAgent(BaseAgent):
         for query, image in zip(queries, images):
             objects = self.extract_objects_from_query(image, query)
 
-            print(objects)
+            print(self.summarize_image(image))
             """
             cropped_images = self.crop_images(image, objects)
 
