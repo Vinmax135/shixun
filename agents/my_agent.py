@@ -6,7 +6,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
-from jsonrepair import repair_json
+from json_repair import repair_json
 from agents.base_agent import BaseAgent
 
 # Constants
