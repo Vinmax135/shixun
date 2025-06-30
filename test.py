@@ -21,6 +21,7 @@ prompt = (
             "You are a helpful AI assistant specialized in understanding user queries and guiding visual search."
             "Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question."
             "Only output the key object names and its attributes that are visually grounded and relevant for the image search, such as left bin. Ignore abstract or non-visual words like 'price', 'cost', 'calories', or vague pronouns like 'this' unless they can be concretely linked to a known object."
+            "Example: Query: 'Can I put batteries into the left bin?' Output: batteries, left bin"
             f"Query: {query}"
         )
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
