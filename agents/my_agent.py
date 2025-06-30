@@ -10,11 +10,11 @@ from json_repair import repair_json
 from agents.base_agent import BaseAgent
 
 # Constants
-LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
+LLM_MODEL_NAME = "Qwen/Qwen2-7B-Instruct"
 BATCH_SIZE = 1
 BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
-SEARCH_COUNT = 5
+SEARCH_COUNT = 10
 
 class MyAgent(BaseAgent):
     def __init__(self, search_pipeline):
@@ -288,4 +288,7 @@ class MyAgent(BaseAgent):
             for each in images_datas:
                 print(each, end="\n\n")
 
-        return "None"
+            prompt = """
+
+            """
+        return None
