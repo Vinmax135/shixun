@@ -8,20 +8,15 @@ from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
 from agents.base_agent import BaseAgent
-from vllm import SamplingParams
 from crag_web_result_fetcher import WebSearchResult
-import vllm
+from transformers import AutoProcessor, AutoModelForVision2Seq
 
 # Constants
-VISION_MODEL_NAME = "meta-llama/Llama-3.2-11B-Vision-Instruct"  # Fits 5-8GB range
+VISION_MODEL_NAME = "meta-llama/Llama-3.2-11B-Vision-Instruct"
 BATCH_SIZE = 2
 BOX_THRESHOLD = 0.35
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 10
-VLLM_TENSOR_PARALLEL_SIZE = 1 
-VLLM_GPU_MEMORY_UTILIZATION = 0.85 
-MAX_MODEL_LEN = 8192
-MAX_NUM_SEQS = 2
 MAX_GENERATED_TOKENS = 32
 
 class SmartAgent(BaseAgent):
@@ -32,20 +27,13 @@ class SmartAgent(BaseAgent):
             "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py",
             "../GroundingDINO/groundingdino_swint_ogc.pth"
         )
-        self.llm = vllm.LLM(
+        self.vision_processor = AutoProcessor.from_pretrained(VISION_MODEL_NAME)
+        self.vision_model = AutoModelForVision2Seq.from_pretrained(
             VISION_MODEL_NAME,
-            tensor_parallel_size=VLLM_TENSOR_PARALLEL_SIZE, 
-            gpu_memory_utilization=VLLM_GPU_MEMORY_UTILIZATION, 
-            max_model_len=MAX_MODEL_LEN,
-            max_num_seqs=MAX_NUM_SEQS,
-            trust_remote_code=True,
-            dtype="bfloat16",
-            enforce_eager=True,
-            limit_mm_per_prompt={
-                "image": 1 
-            } # In the CRAG-MM dataset, every conversation has at most 1 image
-        )
-        self.tokenizer = self.llm.get_tokenizer()
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+            trust_remote_code=True
+        ).eval()
 
     def get_batch_size(self):
         return BATCH_SIZE
@@ -58,16 +46,12 @@ class SmartAgent(BaseAgent):
             "If vague (e.g., 'this'), return 'item'.\n"
             "Format: comma-separated."
         )
-
-        full_prompt = f"<|system|>\n{system_prompt}\n<|user|>\nQuery: {query}\n<|image|>\n"
-
-        sampling_params = SamplingParams(max_tokens=16)
-        result = self.llm.generate(
-            prompts={"prompt": full_prompt, "image": image},
-            sampling_params=sampling_params
-        )
-        text = result[0].text.strip()
-        objects = [obj.strip() for obj in re.split(r"[,\n]", text) if obj.strip()]
+        prompt = f"<|system|>\n{system_prompt}\n<|user|>\nQuery: {query}\n<|image|>"
+        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
+        with torch.no_grad():
+            outputs = self.vision_model.generate(**inputs, max_new_tokens=16)
+        text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+        objects = [obj.strip() for obj in re.split(r"[\,\n]", text) if obj.strip()]
         return objects or ["item"]
 
     def crop_images(self, image: Image.Image, objects: List[str]) -> List[Image.Image]:
@@ -87,7 +71,7 @@ class SmartAgent(BaseAgent):
             if len(xyxy) > 0:
                 cropped_images.append(image.crop(xyxy[0]))
 
-        if not len(cropped_images) > 0:
+        if not cropped_images:
             boxes, logits, phrases = predict(
                 model=self.visual_model,
                 image=image_tensor,
@@ -95,31 +79,21 @@ class SmartAgent(BaseAgent):
                 box_threshold=BOX_THRESHOLD,
                 text_threshold=TEXT_THRESHOLD
             )
-
             boxes = boxes * torch.Tensor([w, h, w, h])
             xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
-
             if len(xyxy) > 0:
                 areas = [(x2 - x1) * (y2 - y1) for (x1, y1, x2, y2) in xyxy]
                 largest_idx = areas.index(max(areas))
                 cropped_images.append(image.crop(xyxy[largest_idx]))
-            
-        if not len(cropped_images) > 0:
-            cropped_images.append(image)
 
         return cropped_images or [image]
 
     def summarize_image(self, image: Image.Image) -> str:
-        prompt = (
-            "<|system|>\nYou are a helpful assistant. Describe the image in detail.\n"
-            "<|user|>\n<|image|>\n"
-        )
-        sampling_params = SamplingParams(max_tokens=128)
-        result = self.llm.generate(
-            prompts={"prompt": prompt, "image": image},
-            sampling_params=sampling_params
-        )
-        return result[0].text.strip()
+        prompt = "<|system|>\nYou are a helpful assistant. Describe the image in detail.\n<|user|>\n<|image|>"
+        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
+        with torch.no_grad():
+            outputs = self.vision_model.generate(**inputs, max_new_tokens=128)
+        return self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
 
     def clean_metadata(self, raw_data: List[Dict[str, Any]]) -> Dict[str, str]:
         raw_data = raw_data[0]
@@ -159,7 +133,7 @@ class SmartAgent(BaseAgent):
                 cleaned = [self.clean_metadata(res["entities"]) for res in results if "entities" in res and res["entities"]]
                 candidates.extend(cleaned)
 
-            image_summary = self.summarize_image(cropped_images)
+            image_summary = self.summarize_image(cropped_images[0])
             text_summaries = [self.summarize_data(c) for c in candidates]
 
             if not text_summaries:
@@ -169,18 +143,14 @@ class SmartAgent(BaseAgent):
             best_idx = self.rerank(image_summary, text_summaries)
             best_context = text_summaries[best_idx]
 
-            search_query = f"{query} {best_context}"
-            web_results = self.search_pipeline(search_query, k=3)
-
             prompt = (
                 "<|system|>\nYou are a helpful assistant answering based on visual content and extra information.\n"
-                f"<|user|>\nImage summary: {image_summary}\nMetadata: {best_context}\nQuestion: {query}\n<|image|>\n"
+                f"<|user|>\nImage summary: {image_summary}\nMetadata: {best_context}\nQuestion: {query}\n<|image|>"
             )
-            sampling_params = SamplingParams(max_tokens=MAX_GENERATED_TOKENS)
-            result = self.llm.generate(
-                prompts={"prompt": prompt, "image": image},
-                sampling_params=sampling_params
-            )
-            answer = result[0].text.strip()
+            inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
+            with torch.no_grad():
+                outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATED_TOKENS)
+            answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
             responses.append(answer)
+
         return responses
