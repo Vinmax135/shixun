@@ -30,11 +30,11 @@ class SmartAgent(BaseAgent):
         self.vision_processor = Blip2Processor.from_pretrained(VISION_MODEL_NAME)
         self.vision_model = Blip2ForConditionalGeneration.from_pretrained(
             VISION_MODEL_NAME,
-            device_map="auto",              
+            device_map="cpu",              
             offload_folder="./offload_vlm", 
             trust_remote_code=True,
             torch_dtype=torch.float16
-            ).eval().cuda()
+            ).eval()
 
     def get_batch_size(self):
         return BATCH_SIZE
