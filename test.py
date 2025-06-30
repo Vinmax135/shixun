@@ -23,9 +23,7 @@ prompt = (
             "Only include physically visible, nameable items — such as objects, labels, signs, or container types — that are explicitly mentioned or implied in the question and that can be found visually in the image."
             "Ignore non-visual concepts like 'cost', 'price', 'calories', and ignore vague references like 'this', 'it', or abstract actions. Focus only on visually grounded items."
             "Output a comma-separated list of objects with attributes if relevant. Do not include explanations."
-            "Example:"
-            "Query: 'Can I throw batteries in the left bin?'"
-            "Output: batteries, left bin, recycling logo"
+            "You are only permitted to return noun and adjective words."
             f"Query: {query}"
             "Answer:"
         )
