@@ -32,7 +32,7 @@ class SimpleRAGAgent(BaseAgent):
         self.initialize_models()
 
     def initialize_models(self):
-        print(f"Initializing {self.model_name} with transformers...")
+
         self.processor = AutoProcessor.from_pretrained(self.model_name, trust_remote_code=True)
         self.llm = AutoModelForVision2Seq.from_pretrained(
             self.model_name,
