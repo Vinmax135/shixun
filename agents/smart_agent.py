@@ -143,11 +143,16 @@ class SmartAgent(BaseAgent):
             best_idx = self.rerank(image_summary, text_summaries)
             best_context = text_summaries[best_idx]
 
-            prompt = (
-                "<|system|>\nYou are a helpful assistant answering based on visual content and extra information.\n"
-                f"<|user|>\nImage summary: {image_summary}\nMetadata: {best_context}\nQuestion: {query}\n<|image|>"
-                "Answer:"
-            )
+            prompt = """
+                <|system|>
+                You are a precise and concise assistant. You are given a summarized description of an image and related metadata. Your task is to answer the user's question based strictly on the provided image and information. Do not provide explanations. If there is insufficient information to answer, respond with: "I don't know."
+
+                <|user|>
+                Image summary: {image_summary}
+                Metadata: {metadata}
+                Question: {query}
+                <|image|>
+                Answer:"""
             inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
             with torch.no_grad():
                 outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATED_TOKENS)
