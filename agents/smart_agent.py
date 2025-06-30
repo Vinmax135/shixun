@@ -45,6 +45,7 @@ class SmartAgent(BaseAgent):
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
         outputs = self.vision_model.generate(**inputs, max_new_tokens=16)
         text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0]
+        print(text)
         objects = [obj.strip() for obj in text.split(',') if obj.strip()]
         return objects or ["item"]
 
