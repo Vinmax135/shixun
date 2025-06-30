@@ -41,14 +41,14 @@ class SmartAgent(BaseAgent):
         return BATCH_SIZE
 
     def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
-        prompt = f"Based on the image and the question '{query}', return just the list of the key visual objects to identify. Separate with commas."
+        prompt = f"Based on the image and the question '{query}', return just the list of the key visual objects to identify without explanation. Separate with commas. Answers:"
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
         print(inputs)
         outputs = self.vision_model.generate(**inputs, max_new_tokens=64)
         print(outputs)
         text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0]
         print(text)
-        objects = [obj.strip() for obj in text.split(',') if obj.strip()]
+        objects = [obj.strip() for obj in text.split("Answer:")[-1].split(',') if obj.strip()]
         return objects or ["item"]
 
     def crop_images(self, image: Image.Image, objects: List[str]) -> List[Image.Image]:
