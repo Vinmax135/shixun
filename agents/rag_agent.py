@@ -18,7 +18,7 @@ class SimpleRAGAgent(BaseAgent):
     def __init__(
         self,
         search_pipeline: UnifiedSearchPipeline,
-        model_name: str = "blip-2-flan-t5-large",
+        model_name: str = "Salesforce/blip2-flan-t5-xl",
         max_gen_len: int = 64
     ):
         super().__init__(search_pipeline)
