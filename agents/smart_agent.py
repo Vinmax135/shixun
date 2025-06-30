@@ -106,8 +106,6 @@ class SmartAgent(BaseAgent):
         responses = []
         for query, image in zip(queries, images):
             objects = self.extract_objects_from_query(image, query)
-
-            """
             cropped_images = self.crop_images(image, objects)
 
             candidates = []
@@ -116,6 +114,8 @@ class SmartAgent(BaseAgent):
                 cleaned = [self.clean_metadata(res["entities"]) for res in results if "entities" in res and res["entities"]]
                 candidates.extend(cleaned)
 
+            print(candidates)
+            """
             image_summary = self.summarize_image(image)
             text_summaries = [self.summarize_data(c) for c in candidates]
 
