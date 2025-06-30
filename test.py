@@ -17,9 +17,14 @@ torch_dtype=torch.float16
 
 query = "Can i throw batteries in the left bin?"
 
-prompt = (
-            f"Given an image and a query '{query}', as a helpful assistant, what objects do you think in this image i should get the information to get the answer? return only the object name separated by a comma"
-        )
+prompt = f"""
+            You are a helpful AI assistant specialized in understanding user queries and guiding visual search.
+            Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question.
+            Only output the key object names or phrases that are visually grounded and relevant for the image search. Ignore abstract or non-visual words like "price", "cost", "calories", or vague pronouns like "this" unless they can be concretely linked to a known object.
+            If the query refers vaguely (e.g., "this item") and no specific object can be extracted, respond with the most general term like "item".
+            
+            Query: {query}
+        """
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
     outputs = vision_model.generate(**inputs, max_new_tokens=16)
