@@ -46,7 +46,7 @@ class SmartAgent(BaseAgent):
             with no explanation or additional text. Answer:"""
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
         with torch.no_grad():
-            outputs = self.vision_model.generate(**inputs, max_new_tokens=64)
+            outputs = self.vision_model.generate(**inputs, max_new_tokens=8)
         text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0]
         print(text)
         objects = [obj.strip() for obj in text.split("Answer:")[-1].split(',') if obj.strip()]
