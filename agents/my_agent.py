@@ -11,7 +11,7 @@ from agents.base_agent import BaseAgent
 
 # Constants
 LLM_MODEL_NAME = "Qwen/Qwen2-7B-Instruct"
-BATCH_SIZE = 1
+BATCH_SIZE = 13
 BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 10
@@ -265,10 +265,13 @@ class MyAgent(BaseAgent):
 
     def batch_generate_response(self, queries, images, message_histories=None):
         prompts = []
-
+        i = 1
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
+            image.save(f"test/pre{i}.png")
             cropped_images = self.crop_images(image, main_objects)
+            cropped_images.save(f"test/post{i}.png")
+            i += 1
 
             images_datas = []
             for each_image in cropped_images:
