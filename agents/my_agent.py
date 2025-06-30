@@ -206,28 +206,32 @@ class MyAgent(BaseAgent):
     
     def paragraph_to_dict(self, text):                                                          # Done
         prompt = """
-            Extract structured attributes from the following product description.
-            Strictly return them as a JSON object with simple field names like 'price', 'engine', 'brand', 'use_case', etc. no explanations or ideas should exist in the output.
-            ---
-            Example 1:
-            Description:
+            Extract key attributes from the product description below.
+
+            You must return a single valid JSON object. 
+            No explanations, no prefixes or suffixes, no extra text — only the JSON object.
+            Use only lowercase snake_case field names like "price", "brand", "use_case", "engine", etc.
+
+            Rules:
+            - Only include attributes that are clearly and confidently present in the text.
+            - Do not guess or hallucinate missing data.
+            - Omit attributes that are not mentioned.
+            - Do not output empty values, nulls, or empty lists.
+            - Close all strings with quotes.
+            - Close all brackets and braces properly. Invalid JSON will be rejected.
+
+            Example:
+            Input:
             \"\"\"This running shoe costs $120 and is ideal for marathons.\"\"\"
+
             Output:
             {
             "price": "$120",
             "use_case": "marathons"
             }
-            ---
-            Only return a single JSON object.Do not repeat or invent fields not found in the description. No explanations. No story. Only important attribute-value pairs and keep the value as short as possible.
-            Only include attributes that can be confidently extracted from the text. 
-            Do not include null values or empty lists. 
-            Return only with a valid JSON format, nothing else.
-            Remember to close any data when parsing, such as when using [ dont forget to put ] after it is done
 
-            Description:
-            \"\"\"""" + \
-            text + \
-            """\"\"\"
+            Now extract attributes from this:
+            """ + {text} + """
 
             Output:
         """
