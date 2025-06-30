@@ -32,7 +32,7 @@ class SmartAgent(BaseAgent):
             "../GroundingDINO/groundingdino_swint_ogc.pth"
         )
         self.llm = vllm.LLM(
-            self.model_name,
+            VISION_MODEL_NAME,
             tensor_parallel_size=VLLM_TENSOR_PARALLEL_SIZE, 
             gpu_memory_utilization=VLLM_GPU_MEMORY_UTILIZATION, 
             max_model_len=MAX_MODEL_LEN,
