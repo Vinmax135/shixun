@@ -19,3 +19,4 @@ tqdm
 opencv-python
 pillow
 huggingface-hub
+json_repair
