@@ -14,7 +14,7 @@ from crag_web_result_fetcher import WebSearchResult
 # Constants
 VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"  # Fits 5-8GB range
 BATCH_SIZE = 7
-BOX_THRESHOLD = 0.4
+BOX_THRESHOLD = 0.35
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 10
 MAX_GENERATED_TOKENS = 32
@@ -40,10 +40,14 @@ class SmartAgent(BaseAgent):
         return BATCH_SIZE
 
     def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
-        prompt = (
-            f"Based on the image and the question '{query}', list objects that is mentioned by the query, objects listed can be one or more, "
-            "SEPARATED BY COMMAS, no explanation. For example: car, tree, person\nAnswer:"
-        )
+        prompt = f"""
+            You are a helpful AI assistant specialized in understanding user queries and guiding visual search.
+            Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question.
+            Only output the key object names or phrases that are visually grounded and relevant for the image search. Ignore abstract or non-visual words like "price", "cost", "calories", or vague pronouns like "this" unless they can be concretely linked to a known object.
+            If the query refers vaguely (e.g., "this item") and no specific object can be extracted, respond with the most general term like "item".
+            
+            Query: {query}
+        """
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
         with torch.no_grad():
             outputs = self.vision_model.generate(**inputs, max_new_tokens=8)
@@ -106,6 +110,7 @@ class SmartAgent(BaseAgent):
         responses = []
         i = 1
         for query, image in zip(queries, images):
+            """
             objects = self.extract_objects_from_query(image, query)
             cropped_images = self.crop_images(image, objects)
             cropped_images[0].save(f"test/post{i}.png")
@@ -119,6 +124,8 @@ class SmartAgent(BaseAgent):
                 candidates.extend(cleaned)
             """
             image_summary = self.summarize_image(image)
+            print(image_summary)
+            """
             text_summaries = [self.summarize_data(c) for c in candidates]
 
             if not text_summaries:

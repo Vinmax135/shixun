@@ -2,7 +2,7 @@ from PIL import Image
 from transformers import Blip2Processor, Blip2ForConditionalGeneration
 import torch
 
-image = Image.open("test/post2.png")
+image = Image.open("pre.png")
 
 VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"
 
@@ -18,12 +18,7 @@ torch_dtype=torch.float16
 query = "Can i throw batteries in the left bin?"
 
 prompt = f"""
-            You are a helpful AI assistant specialized in understanding user queries and guiding visual search.
-            Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question.
-            Only output the key object names or phrases that are visually grounded and relevant for the image search. Ignore abstract or non-visual words like "price", "cost", "calories", or vague pronouns like "this" unless they can be concretely linked to a known object.
-            If the query refers vaguely (e.g., "this item") and no specific object can be extracted, respond with the most general term like "item".
-            
-            Query: {query}
+            You are a helpful assistant, summarize this image in two sentences, make sure those are the key points of the given image.
         """
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
