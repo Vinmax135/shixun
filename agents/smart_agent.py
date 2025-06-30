@@ -25,8 +25,8 @@ class SmartAgent(BaseAgent):
         super().__init__(search_pipeline)
         self.semantic = SentenceTransformer('all-MiniLM-L6-v2')
         self.visual_model = load_model(
-            config_path="../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py",
-            weight_path="../GroundingDINO/groundingdino_swint_ogc.pth"
+            "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py",
+            "../GroundingDINO/groundingdino_swint_ogc.pth"
         )
         self.vision_processor = AutoProcessor.from_pretrained(VISION_MODEL_NAME)
         self.vision_model = AutoModelForVision2Seq.from_pretrained(
