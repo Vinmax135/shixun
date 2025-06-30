@@ -244,7 +244,7 @@ class MyAgent(BaseAgent):
         try:
             return_responses = json.loads(preprocessed_responses)
         except:
-            return_responses = ("description", text)
+            return_responses = {"description": text}
         return return_responses
 
     def rerank(self, image_data, query):
