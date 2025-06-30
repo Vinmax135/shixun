@@ -108,7 +108,7 @@ class SmartAgent(BaseAgent):
         for query, image in zip(queries, images):
             objects = self.extract_objects_from_query(image, query)
             cropped_images = self.crop_images(image, objects)
-            cropped_images.save(f"test/post{i}.png")
+            cropped_images[0].save(f"test/post{i}.png")
             i += 1
 
             candidates = []
