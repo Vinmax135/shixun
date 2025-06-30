@@ -4,12 +4,12 @@ import re
 import json
 from PIL import Image
 from torchvision.ops import box_convert
-from transformers import Blip2Processor, Blip2ForConditionalGeneration
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
 from agents.base_agent import BaseAgent
 from crag_web_result_fetcher import WebSearchResult
+import vllm
 
 # Constants
 VISION_MODEL_NAME = "meta-llama/Llama-3.2-11B-Vision-Instruct"  # Fits 5-8GB range
@@ -17,6 +17,10 @@ BATCH_SIZE = 2
 BOX_THRESHOLD = 0.35
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 10
+VLLM_TENSOR_PARALLEL_SIZE = 1 
+VLLM_GPU_MEMORY_UTILIZATION = 0.85 
+MAX_MODEL_LEN = 8192
+MAX_NUM_SEQS = 2
 MAX_GENERATED_TOKENS = 32
 
 class SmartAgent(BaseAgent):
@@ -27,32 +31,43 @@ class SmartAgent(BaseAgent):
             "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py",
             "../GroundingDINO/groundingdino_swint_ogc.pth"
         )
-        self.vision_processor = Blip2Processor.from_pretrained(VISION_MODEL_NAME)
-        self.vision_model = Blip2ForConditionalGeneration.from_pretrained(
-            VISION_MODEL_NAME,
-            device_map="auto",              
-            offload_folder="./offload_vlm", 
+        self.llm = vllm.LLM(
+            self.model_name,
+            tensor_parallel_size=VLLM_TENSOR_PARALLEL_SIZE, 
+            gpu_memory_utilization=VLLM_GPU_MEMORY_UTILIZATION, 
+            max_model_len=MAX_MODEL_LEN,
+            max_num_seqs=MAX_NUM_SEQS,
             trust_remote_code=True,
-            torch_dtype=torch.float16
-            ).eval().cuda()
+            dtype="bfloat16",
+            enforce_eager=True,
+            limit_mm_per_prompt={
+                "image": 1 
+            } # In the CRAG-MM dataset, every conversation has at most 1 image
+        )
+        self.tokenizer = self.llm.get_tokenizer()
 
     def get_batch_size(self):
         return BATCH_SIZE
 
     def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
-        prompt = f"""
-            You are a helpful AI assistant specialized in understanding user queries and guiding visual search.
-            Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question.
-            Only output the key object names or phrases that are visually grounded and relevant for the image search. Ignore abstract or non-visual words like "price", "cost", "calories", or vague pronouns like "this" unless they can be concretely linked to a known object.
-            If the query refers vaguely (e.g., "this item") and no specific object can be extracted, respond with the most general term like "item".
-            
-            Query: {query}
-        """
-        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-        with torch.no_grad():
-            outputs = self.vision_model.generate(**inputs, max_new_tokens=8)
-        text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0]
-        objects = [obj.strip() for obj in text.split("Answer:")[-1].split(',') if obj.strip()]
+        system_prompt = (
+            "You are a helpful AI assistant specialized in understanding user queries and guiding visual search.\n"
+            "Your task: Given an image and a question, extract the visual objects or text that must be identified in the image to answer the question.\n"
+            "Only output the object names or visual labels relevant for the query. No explanations.\n"
+            "If vague (e.g., 'this'), return 'item'.\n"
+            "Format: comma-separated."
+        )
+
+        full_prompt = f"<|system|>\n{system_prompt}\n<|user|>\nQuery: {query}\n<|image|>\n"
+
+        output = self.llm.generate(
+            prompts=[{"prompt": full_prompt, "image": image}],
+            max_tokens=16,
+        )[0]["generated_text"]
+
+        # Postprocess to extract clean object list
+        text = output.strip()
+        objects = [obj.strip() for obj in re.split(r"[,\n]", text) if obj.strip()]
         return objects or ["item"]
 
     def crop_images(self, image: Image.Image, objects: List[str]) -> List[Image.Image]:
@@ -95,10 +110,15 @@ class SmartAgent(BaseAgent):
         return cropped_images or [image]
 
     def summarize_image(self, image: Image.Image) -> str:
-        prompt = "Summarize the image in one sentence."
-        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-        outputs = self.vision_model.generate(**inputs, max_new_tokens=128)
-        return self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+        prompt = (
+            "<|system|>\nYou are a helpful assistant. Describe the image in detail.\n"
+            "<|user|>\n<|image|>\n"
+        )
+        output = self.llm.generate(
+            prompts=[{"prompt": prompt, "image": image}],
+            max_tokens=128,
+        )[0]["generated_text"]
+        return output.strip()
 
     def clean_metadata(self, raw_data: List[Dict[str, Any]]) -> Dict[str, str]:
         raw_data = raw_data[0]
@@ -151,9 +171,14 @@ class SmartAgent(BaseAgent):
             search_query = f"{query} {best_context}"
             web_results = self.search_pipeline(search_query, k=3)
 
-            prompt = f"You are given the image summary: '{image_summary}' and the info: '{best_context}'. Answer this question: '{query}'."
-            inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-            outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATED_TOKENS)
-            answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+            prompt = (
+                "<|system|>\nYou are a helpful assistant answering based on visual content and extra information.\n"
+                f"<|user|>\nImage summary: {image_summary}\nMetadata: {best_context}\nQuestion: {query}\n<|image|>\n"
+            )
+            output = self.llm.generate(
+                prompts=[{"prompt": prompt, "image": image}],
+                max_tokens=MAX_GENERATED_TOKENS,
+            )[0]["generated_text"]
+            answer = output.strip()
             responses.append(answer)
         return responses
