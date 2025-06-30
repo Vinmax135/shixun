@@ -41,7 +41,7 @@ class SmartAgent(BaseAgent):
 
     def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
         prompt = (
-            f"Based on the image and the question '{query}', list ONLY the key visual objects present, "
+            f"Based on the image and the question '{query}', list objects i should check for to answer the question, "
             "SEPARATED BY COMMAS, no explanation. For example: car, tree, person\nAnswer:"
         )
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
@@ -106,6 +106,7 @@ class SmartAgent(BaseAgent):
         responses = []
         for query, image in zip(queries, images):
             objects = self.extract_objects_from_query(image, query)
+
             """
             cropped_images = self.crop_images(image, objects)
 
