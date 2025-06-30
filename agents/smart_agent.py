@@ -41,7 +41,7 @@ class SmartAgent(BaseAgent):
 
     def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
         prompt = (
-            f"Based on the image and the question '{query}', list objects i should check for to answer the question, "
+            f"Based on the image and the question '{query}', list objects i should check for to answer and will contribute to answer the question, objects listed can be one or more, "
             "SEPARATED BY COMMAS, no explanation. For example: car, tree, person\nAnswer:"
         )
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
