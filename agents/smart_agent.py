@@ -104,6 +104,9 @@ class SmartAgent(BaseAgent):
         responses = []
         for query, image in zip(queries, images):
             objects = self.extract_objects_from_query(image, query)
+
+            print(objects)
+            """
             cropped_images = self.crop_images(image, objects)
 
             candidates = []
@@ -131,5 +134,5 @@ class SmartAgent(BaseAgent):
             outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATED_TOKENS)
             answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
             responses.append(answer)
-
-        return responses
+            """
+        return queries
