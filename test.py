@@ -2,7 +2,7 @@ from PIL import Image
 from transformers import Blip2Processor, Blip2ForConditionalGeneration
 import torch
 
-image = Image.open("pre.png")
+image = Image.open("test/post2.png")
 
 VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"
 
@@ -15,9 +15,11 @@ trust_remote_code=True,
 torch_dtype=torch.float16
 ).eval().cuda()
 
+query = "Can i throw batteries in the left bin?"
+
 prompt = (
-            f"Based on the image and the question 'How much is this scooter costs', list objects i should check for to answer the question, "
-            "SEPARATED BY COMMAS, no explanation. For example: car, tree, person\nAnswer:"
+            f"Based on the image and the question '{query}', list objects that is mentioned by the query, no sentences, just words, objects listed can be one or more, "
+            "SEPARATED BY COMMAS, no explanation. For example: car, tree, person, left table\nAnswer:"
         )
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
