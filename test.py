@@ -18,8 +18,10 @@ torch_dtype=torch.float16
 query = "Can i throw batteries in the left bin?"
 
 prompt = (
-            f"Based on the image and the question '{query}', list objects that is mentioned by the query, no sentences, just words, objects listed can be one or more, "
-            "SEPARATED BY COMMAS, no explanation. For example: car, tree, person, left table\nAnswer:"
+            "You are a helpful AI assistant specialized in understanding user queries and guiding visual search."
+            "Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question."
+            "Only output the key object names or phrases that are visually grounded and relevant for the image search. Ignore abstract or non-visual words like 'price', 'cost', 'calories', or vague pronouns like 'this' unless they can be concretely linked to a known object."
+            f"Query: {query}"
         )
 inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
 with torch.no_grad():
