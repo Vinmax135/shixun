@@ -74,11 +74,11 @@ class SmartAgent(BaseAgent):
     def summarize_image(self, image: Image.Image) -> str:
         prompt = "Summarize the image in one sentence."
         inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-        outputs = self.vision_model.generate(**inputs, max_new_tokens=30)
+        outputs = self.vision_model.generate(**inputs, max_new_tokens=16)
         return self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
 
     def clean_metadata(self, raw_data: List[Dict[str, Any]]) -> Dict[str, str]:
-        raw_data = raw_data[0]  # First entity only
+        raw_data = raw_data[0]
         cleaned = {"name": raw_data.get("entity_name", "unknown")}
         attrs = raw_data.get("entity_attributes") or {}
         ignore = {"image", "website", "url", "wikidata", "coordinates"}
