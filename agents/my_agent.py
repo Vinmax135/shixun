@@ -10,7 +10,7 @@ from json_repair import repair_json
 from agents.base_agent import BaseAgent
 
 # Constants
-LLM_MODEL_NAME = "Qwen/Qwen2-7B-Instruct"
+LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 BATCH_SIZE = 13
 BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
