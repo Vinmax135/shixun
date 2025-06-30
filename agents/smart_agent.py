@@ -61,8 +61,7 @@ class SmartAgent(BaseAgent):
         full_prompt = f"<|system|>\n{system_prompt}\n<|user|>\nQuery: {query}\n<|image|>\n"
 
         output = self.llm.generate(
-            prompts=[{"prompt": full_prompt, "image": image}],
-            max_tokens=16,
+            prompts=[{"prompt": full_prompt, "image": image}]
         )[0]["generated_text"]
 
         # Postprocess to extract clean object list
@@ -116,7 +115,6 @@ class SmartAgent(BaseAgent):
         )
         output = self.llm.generate(
             prompts=[{"prompt": prompt, "image": image}],
-            max_tokens=128,
         )[0]["generated_text"]
         return output.strip()
 
@@ -176,8 +174,7 @@ class SmartAgent(BaseAgent):
                 f"<|user|>\nImage summary: {image_summary}\nMetadata: {best_context}\nQuestion: {query}\n<|image|>\n"
             )
             output = self.llm.generate(
-                prompts=[{"prompt": prompt, "image": image}],
-                max_tokens=MAX_GENERATED_TOKENS,
+                prompts=[{"prompt": prompt, "image": image}]
             )[0]["generated_text"]
             answer = output.strip()
             responses.append(answer)
