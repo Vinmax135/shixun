@@ -249,8 +249,8 @@ class MyAgent(BaseAgent):
             main_objects = self.extract_object(query)
             cropped_images = self.crop_images(image, main_objects)
 
+            summarization = self.summarize_images(image)
             images_datas = []
-            summarized_images = []
             for each_image in cropped_images:
                 raw_data = self.search_pipeline(each_image, k=SEARCH_COUNT)
 
@@ -258,14 +258,10 @@ class MyAgent(BaseAgent):
                 for each_data in raw_data:
                     cleaned_datas.append(self.clean_metadata(each_data["entities"]))
 
-                summarization = self.summarize_images(each_image)
-                summarized_images.append(summarization)
-
                 possibly_true_data = self.rerank(cleaned_datas, summarization)
                 images_datas.append(possibly_true_data)
 
             summarized_data = ". ".join([self.summarize_data(data) for data in images_datas])
-            summarized_images = ". ".join(summarized_images)
 
             prompt = f"""
                 <|system|>
@@ -274,7 +270,7 @@ class MyAgent(BaseAgent):
 
 
                 <|user|>
-                Image summary: {summarized_images}
+                Image summary: {summarization}
                 Metadata: {summarized_data}
                 Question: {query}
                 <|image|>
