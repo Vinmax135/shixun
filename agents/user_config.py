@@ -1,5 +1,3 @@
-from agents.smart_agent import SmartAgent
+from agents.my_agent import MyAgent
 
-# UserAgent = RandomAgent
-
-UserAgent = SmartAgent
+UserAgent = MyAgent
