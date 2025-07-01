@@ -2,7 +2,7 @@ import torch
 import re
 import json
 from torchvision.ops import box_convert
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM, AutoProcessor, AutoModelForVision2Seq
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
@@ -24,6 +24,15 @@ class MyAgent(BaseAgent):
         config_path = "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
         weight_path = "../GroundingDINO/groundingdino_swint_ogc.pth"
         self.visual_model = load_model(config_path, weight_path)
+
+        # Load Vision Model
+        self.vision_processor = AutoProcessor.from_pretrained("meta-llama/Llama-3.2-11B-Vision-Instruct")
+        self.vision_model = AutoModelForVision2Seq.from_pretrained(
+            "meta-llama/Llama-3.2-11B-Vision-Instruct",
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+            trust_remote_code=True
+        ).eval()
 
         # Load LLM
         offload_folder = "./offload_myagent"
@@ -172,11 +181,7 @@ class MyAgent(BaseAgent):
                 continue
 
             value = str(value)
-            """
-            if len(value) > 500:
-                cleaned.update(self.paragraph_to_dict(value))
-                continue
-            """
+
             # Remove HTML
             value = re.sub(r'<.*?>', '', value)
 
@@ -204,46 +209,6 @@ class MyAgent(BaseAgent):
                 cleaned[key.replace("_", " ").lower()] = value
 
         return cleaned
-    
-    def paragraph_to_dict(self, text):                                                          # Done
-        prompt = """
-            Extract key attributes from the product description below.
-
-            You must return a single valid JSON object. 
-            No explanations, no prefixes or suffixes, no extra text — only the JSON object.
-            Use only lowercase snake_case field names like "price", "brand", "use_case", "engine", etc.
-
-            Rules:
-            - Only include attributes that are clearly and confidently present in the text.
-            - Do not guess or hallucinate missing data.
-            - Omit attributes that are not mentioned.
-            - Do not output empty values, nulls, or empty lists.
-            - Close all strings with quotes.
-            - Close all brackets and braces properly. Invalid JSON will be rejected.
-
-            Example:
-            Input:
-            \"\"\"This running shoe costs $120 and is ideal for marathons.\"\"\"
-
-            Output:
-            {
-            "price": "$120",
-            "use_case": "marathons"
-            }
-
-            Now extract attributes from this:
-            """ + text + """
-
-            Output:
-        """
-
-        output = self.llm_extract_description(prompt)
-        responses = output[0]["generated_text"].split("Output:")[-1]
-        preprocessed_responses = "{" + responses.split("{")[1].split("}")[0].strip() + "}"
-        try:
-            return json.loads(repair_json(preprocessed_responses))
-        except:
-            return {"description": text}
 
     def rerank(self, image_data, query):
         query_emb = self.semantic.encode(query, convert_to_tensor=True)
@@ -261,34 +226,61 @@ class MyAgent(BaseAgent):
         return image_data[reranked.index(max(reranked))]
     
     def summarize_data(self, image_data):
-        return ". ".join(f"{k.replace('_', ' ').capitalize()}: {v}" for k, v in image_data.items() if v)
+        return ", ".join(f"{k.replace('_', ' ').capitalize()}: {v}" for k, v in image_data.items() if v)
+
+    def summarize_images(self, image):
+        prompt = """
+            <|system|>
+            You are a vision expert assistant. Describe the contents of the image as clearly and completely as possible. Mention any key objects, their relationships, locations, colors, actions, and any visible text. Avoid making assumptions beyond what is clearly visible.
+
+            <|user|>
+            Describe this image in detail.
+            <|image|>
+        """
+        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
+        with torch.no_grad():
+            outputs = self.vision_model.generate(**inputs, max_new_tokens=256)
+        return self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
 
     def batch_generate_response(self, queries, images, message_histories=None):
-        prompts = []
-        i = 1
+        responses = []
+
         for query, image in zip(queries, images):
             main_objects = self.extract_object(query)
-            image.save(f"test/pre{i}.png")
             cropped_images = self.crop_images(image, main_objects)
-            cropped_images[0].save(f"test/post{i}.png")
-            i += 1
 
             images_datas = []
+            summarized_images = []
             for each_image in cropped_images:
-                print(main_objects)
                 raw_data = self.search_pipeline(each_image, k=SEARCH_COUNT)
 
                 cleaned_datas = []
                 for each_data in raw_data:
                     cleaned_datas.append(self.clean_metadata(each_data["entities"]))
-                
-                for each in cleaned_datas:
-                    print(each, end="\n\n")
 
-                possibly_true_data = self.rerank(cleaned_datas, query)
+                summarization = self.summarize_images(each_image)
+                summarized_images.append(summarization)
+
+                possibly_true_data = self.rerank(cleaned_datas, summarization)
                 images_datas.append(possibly_true_data)
 
-            prompt = """
-                
-            """
+            summarized_data = ". ".join([self.summarize_data(data) for data in images_datas])
+            summarized_images = ". ".join(summarized_images)
+
+            prompt = f"""
+                <|system|>
+                You are a helpful assistant. Use the image, its summary, and metadata to answer the user's question. Be concise and accurate. Only use the given information. Do not explain your answer. If the information is not enough, respond with: "I don't know."
+
+                <|user|>
+                Image summary: {summarized_images}
+                Metadata: {summarized_data}
+                Question: {query}
+                <|image|>
+                Answer:"""
+            inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
+            with torch.no_grad():
+                outputs = self.vision_model.generate(**inputs, max_new_tokens=16)
+            answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].split("Answer:")[-1].strip()
+            responses.append(answer)
+
         return None
