@@ -269,7 +269,9 @@ class MyAgent(BaseAgent):
 
             prompt = f"""
                 <|system|>
-                You are a helpful assistant. Use the image, its summary, and metadata to answer the user's question. Be concise and accurate. Only use the given information. Do not explain your answer. If the information is not enough, respond with: "I don't know."
+                You are a helpful assistant. Use the image, its summary, and metadata to answer the user's question. 
+                Be concise and accurate. Do not say anything other than answering the question. If you dont know the answer, respond with: "I don't know."
+
 
                 <|user|>
                 Image summary: {summarized_images}
