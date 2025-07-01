@@ -283,4 +283,4 @@ class MyAgent(BaseAgent):
             answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].split("Answer:")[-1].strip()
             responses.append(answer)
 
-        return None
+        return responses
