@@ -1,3 +1,3 @@
-from agents.my_agent import MyAgent
+from agents.smart_agent import MyAgent
 
 UserAgent = MyAgent
