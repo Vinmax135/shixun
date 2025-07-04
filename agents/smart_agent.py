@@ -1,77 +1,106 @@
-from typing import List, Dict, Any
 import torch
 import re
 import json
-from PIL import Image
 from torchvision.ops import box_convert
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM, AutoProcessor, AutoModelForVision2Seq
 from groundingdino.util.inference import load_model, predict
 import groundingdino.datasets.transforms as T
 from sentence_transformers import SentenceTransformer, util
+from json_repair import repair_json
 from agents.base_agent import BaseAgent
-from crag_web_result_fetcher import WebSearchResult
-from transformers import AutoProcessor, AutoModelForVision2Seq
 
 # Constants
-VISION_MODEL_NAME = "meta-llama/Llama-3.2-11B-Vision-Instruct"
-BATCH_SIZE = 2
-BOX_THRESHOLD = 0.35
+LLM_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
+BATCH_SIZE = 13
+BOX_THRESHOLD = 0.4
 TEXT_THRESHOLD = 0.25
 SEARCH_COUNT = 10
-MAX_GENERATED_TOKENS = 32
 
-class SmartAgent(BaseAgent):
+class MyAgent(BaseAgent):
     def __init__(self, search_pipeline):
         super().__init__(search_pipeline)
-        self.semantic = SentenceTransformer('all-MiniLM-L6-v2')
-        self.visual_model = load_model(
-            "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py",
-            "../GroundingDINO/groundingdino_swint_ogc.pth"
-        )
-        self.vision_processor = AutoProcessor.from_pretrained(VISION_MODEL_NAME)
+        
+        # Load Visual Model
+        config_path = "../GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+        weight_path = "../GroundingDINO/groundingdino_swint_ogc.pth"
+        self.visual_model = load_model(config_path, weight_path)
+
+        # Load Vision Model
+        self.vision_processor = AutoProcessor.from_pretrained("meta-llama/Llama-3.2-11B-Vision-Instruct")
         self.vision_model = AutoModelForVision2Seq.from_pretrained(
-            VISION_MODEL_NAME,
+            "meta-llama/Llama-3.2-11B-Vision-Instruct",
             torch_dtype=torch.bfloat16,
             device_map="auto",
             trust_remote_code=True
         ).eval()
 
-    def get_batch_size(self):
-        return BATCH_SIZE
-
-    def extract_objects_from_query(self, image: Image.Image, query: str) -> List[str]:
-        system_prompt = (
-            "You are a helpful AI assistant specialized in understanding user queries and guiding visual search.\n"
-            "Your task: Given an image and a question, extract the visual objects or text that must be identified in the image to answer the question.\n"
-            "Only output the object names or visual labels relevant for the query. No explanations.\n"
-            "If vague (e.g., 'this'), return 'item'.\n"
-            "Format: comma-separated."
+        # Load LLM
+        offload_folder = "./offload_myagent"
+        self.llm_model = AutoModelForCausalLM.from_pretrained(
+            LLM_MODEL_NAME,
+            device_map="auto",
+            offload_folder=offload_folder,
+            torch_dtype="auto",
+            trust_remote_code=True
         )
-        prompt = f"<|system|>\n{system_prompt}\n<|user|>\nQuery: {query}\n<|image|>"
-        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-        with torch.no_grad():
-            outputs = self.vision_model.generate(**inputs, max_new_tokens=16)
-        text = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
-        objects = [obj.strip() for obj in re.split(r"[\,\n]", text) if obj.strip()]
-        return objects or ["item"]
-
-    def crop_images(self, image: Image.Image, objects: List[str]) -> List[Image.Image]:
-        cropped_images = []
-        transform = T.Compose([
-            T.RandomResize([800], max_size=1333),
-            T.ToTensor(),
-            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ])
+        self.llm_tokenizer = AutoTokenizer.from_pretrained(
+            LLM_MODEL_NAME,
+            trust_remote_code=True,
+        )
+        self.llm_extract = pipeline(
+            "text-generation",
+            model=self.llm_model,
+            tokenizer=self.llm_tokenizer,
+            max_new_tokens=8,
+            do_sample=False
+        )
+        self.llm_extract_description = pipeline(
+            "text-generation",
+            model=self.llm_model,
+            tokenizer=self.llm_tokenizer,
+            max_new_tokens=128,
+            do_sample=False
+        )
+        self.llm_generate = pipeline(
+            "text-generation",
+            model=self.llm_model,
+            tokenizer=self.llm_tokenizer,
+            max_new_tokens=16,
+            do_sample=False
+        )
+        self.semantic = SentenceTransformer('all-MiniLM-L6-v2')
+    
+    def get_batch_size(self) -> int:
+        return BATCH_SIZE
+    
+    def crop_images(self, image, objects):                                                      # Done
+        cropped_images = []                                                       
+        transform = T.Compose(
+            [
+                T.RandomResize([800], max_size=1333),
+                T.ToTensor(),
+                T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
         image_tensor, _ = transform(image.convert("RGB"), None)
-        w, h = image.size
 
-        for obj in objects:
-            boxes, _, _ = predict(self.visual_model, image_tensor, obj, BOX_THRESHOLD, TEXT_THRESHOLD)
+        for main_object in objects:
+            boxes, logits, phrases = predict(
+                model=self.visual_model,
+                image=image_tensor,
+                caption=main_object,
+                box_threshold=BOX_THRESHOLD,
+                text_threshold=TEXT_THRESHOLD
+            )
+
+            w, h = image.size
             boxes = boxes * torch.Tensor([w, h, w, h])
             xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
+
             if len(xyxy) > 0:
                 cropped_images.append(image.crop(xyxy[0]))
 
-        if not cropped_images:
+        if not len(cropped_images) > 0:
             boxes, logits, phrases = predict(
                 model=self.visual_model,
                 image=image_tensor,
@@ -79,83 +108,162 @@ class SmartAgent(BaseAgent):
                 box_threshold=BOX_THRESHOLD,
                 text_threshold=TEXT_THRESHOLD
             )
+
             boxes = boxes * torch.Tensor([w, h, w, h])
             xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
+
             if len(xyxy) > 0:
                 areas = [(x2 - x1) * (y2 - y1) for (x1, y1, x2, y2) in xyxy]
                 largest_idx = areas.index(max(areas))
                 cropped_images.append(image.crop(xyxy[largest_idx]))
+            
+        if not len(cropped_images) > 0:
+            cropped_images.append(image)
 
-        return cropped_images or [image]
+        return cropped_images
 
-    def summarize_image(self, image: Image.Image) -> str:
-        prompt = "<|system|>\nYou are a helpful assistant. Describe the image in detail.\n<|user|>\n<|image|>"
-        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
-        with torch.no_grad():
-            outputs = self.vision_model.generate(**inputs, max_new_tokens=128)
-        return self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+    def extract_object(self, query):                                                            # Done
+        prompt = f"""
+            You are a helpful AI assistant specialized in understanding user queries and guiding visual search.
+            Given a user query and an image, your task is to extract the main object or objects mentioned in the query that should be located in the image to answer the question.
+            Only output the key object names or phrases that are visually grounded and relevant for the image search. Ignore abstract or non-visual words like "price", "cost", "calories", or vague pronouns like "this" unless they can be concretely linked to a known object.
+            If the query refers vaguely (e.g., "this item") and no specific object can be extracted, respond with the most general term like "item".
+            ---
+            Example 1:
+            User query: "What is the brand of the biscuits?"
+            Output: biscuits
 
-    def clean_metadata(self, raw_data: List[Dict[str, Any]]) -> Dict[str, str]:
+            Example 2:
+            User query: "Can I put batteries into the left bin?"
+            Output: batteries, left bin
+
+            Example 3:
+            User query: "How many calories does this item have?"
+            Output: item
+
+            Example 4:
+            User query: "What type of dog is this item designed as?"
+            Output: dog
+
+            Example 5:
+            User query: "How to wash it?"
+            Output: item
+            ---
+            When generating output, keep the answer as only objects separated with ',' without any explanation
+            User query: "{query}"
+            Output:
+            """
+        output = self.llm_extract(prompt)
+        responses = output[0]["generated_text"].split("Output:")[-1].strip()
+        preprocessed_responses = responses.split("\n")[0].split("To")[0].split(',')
+        responses_list = [response.strip() for response in preprocessed_responses]
+
+        if responses_list[0] == '':
+            responses_list[0] = "item"
+
+        return responses_list
+
+    def clean_metadata(self, raw_data):                                                         # Done                           
+        cleaned = {}
+        ignored_keys = [
+            "image", "image_size", "mapframe_wikidata", "coordinates",
+            "website", "url", "homepage", "official_site", "wikidata", "wikibase_item"
+        ]
+
         raw_data = raw_data[0]
-        cleaned = {"name": raw_data.get("entity_name", "unknown")}
-        attrs = raw_data.get("entity_attributes") or {}
-        ignore = {"image", "website", "url", "wikidata", "coordinates"}
+        cleaned["name"] = raw_data["entity_name"]
 
-        for k, v in attrs.items():
-            if k in ignore: continue
-            v = str(v)
-            v = re.sub(r'<.*?>', '', v)
-            v = re.sub(r'\{\{[^}]+\}\}', '', v)
-            v = re.sub(r'\[\[[^\]]+\]\]', '', v)
-            v = re.sub(r'\s+', ' ', v.strip())
-            if v.lower() not in {"n/a", "none", "unknown"}:
-                cleaned[k.replace("_", " ").lower()] = v
+        if raw_data["entity_attributes"] == None:
+            return {"name": raw_data["entity_name"]}
+
+        for key, value in raw_data["entity_attributes"].items():
+            if key in ignored_keys:
+                continue
+
+            value = str(value)
+
+            # Remove HTML
+            value = re.sub(r'<.*?>', '', value)
+
+            # Wikipedia convert: {{convert|870|ft|m|0|abbr=on}} -> "870 ft m 0"
+            value = re.sub(r'\{\{convert\|([^}]+)\}\}', lambda m: " ".join(p for p in m.group(1).split('|') if '=' not in p), value)
+
+            # Wikipedia coord: remove completely
+            value = re.sub(r'\{\{coord\|[^}]+\}\}', '', value)
+
+            # URL template: {{URL|https://...}} -> https://...
+            value = re.sub(r'\{\{URL\|([^}]+)\}\}', r'\1', value)
+
+            # Generic Wikipedia template: {{...}} → keep parts without '='
+            value = re.sub(r'\{\{([^\{\}]+)\}\}', lambda m: " ".join(p for p in m.group(1).split('|') if '=' not in p), value)
+
+            # Wikipedia links: [[link|label]] → label, [[link]] → link
+            value = re.sub(r'\[\[([^\|\]]+)\|([^\]]+)\]\]', r'\2', value)
+            value = re.sub(r'\[\[([^\]]+)\]\]', r'\1', value)
+
+            # Whitespace cleanup
+            value = re.sub(r'[\n\t\r]', ' ', value).strip()
+            value = re.sub(r'\s+', ' ', value)
+
+            if value and value.lower() not in ["n/a", "-", "unknown", "none"]:
+                cleaned[key.replace("_", " ").lower()] = value
+
         return cleaned
 
-    def summarize_data(self, data: Dict[str, str]) -> str:
-        return ". ".join(f"{k.capitalize()}: {v}" for k, v in data.items())
-
-    def rerank(self, query: str, summaries: List[str]) -> int:
+    def rerank(self, image_data, query):
         query_emb = self.semantic.encode(query, convert_to_tensor=True)
-        scores = [util.cos_sim(query_emb, self.semantic.encode(s, convert_to_tensor=True)).item() for s in summaries]
-        return scores.index(max(scores))
 
-    def batch_generate_response(self, queries: List[str], images: List[Image.Image], message_histories=None) -> List[str]:
+        reranked = []
+        for info in image_data:
+            candidate_text = info["name"]
+            for key in info:
+                if not key == "name":
+                    candidate_text += " " + str(info[key])
+            
+            data_emb = self.semantic.encode(query, convert_to_tensor=True)
+            reranked.append(util.cos_sim(query_emb, data_emb).item())
+
+        return image_data[reranked.index(max(reranked))]
+    
+    def summarize_data(self, image_data):
+        return ", ".join(f"{k.replace('_', ' ').capitalize()}: {v}" for k, v in image_data.items() if v)
+
+    def summarize_images(self, image):
+        prompt = """
+            <|system|>
+            You are a vision expert assistant. Describe the contents of the image as clearly and completely as possible. Mention any key objects, their relationships, locations, colors, actions, and any visible text. Avoid making assumptions beyond what is clearly visible.
+
+            <|user|>
+            Describe this image in detail.
+            <|image|>
+        """
+        inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
+        with torch.no_grad():
+            outputs = self.vision_model.generate(**inputs, max_new_tokens=256)
+        return self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+
+    def batch_generate_response(self, queries, images, message_histories=None):
         responses = []
 
         for query, image in zip(queries, images):
-            objects = self.extract_objects_from_query(image, query)
-            cropped_images = self.crop_images(image, objects)
+            raw_data = self.search_pipeline(image, k=SEARCH_COUNT)
 
-            candidates = []
-            for cropped in cropped_images:
-                results = self.search_pipeline(cropped, k=SEARCH_COUNT)
-                cleaned = [self.clean_metadata(res["entities"]) for res in results if "entities" in res and res["entities"]]
-                candidates.extend(cleaned)
+            summarized_data = ". ".join([self.summarize_data(data) for data in raw_data])
 
-            image_summary = self.summarize_image(cropped_images[0])
-            text_summaries = [self.summarize_data(c) for c in candidates]
-
-            if not text_summaries:
-                responses.append("I couldn't find enough information.")
-                continue
-
-            best_idx = self.rerank(image_summary, text_summaries)
-            best_context = text_summaries[best_idx]
-
-            prompt = """
+            prompt = f"""
                 <|system|>
-                You are a precise and concise assistant. You are given a summarized description of an image and related metadata. Your task is to answer the user's question based strictly on the provided image and information. Do not provide explanations. If there is insufficient information to answer, respond with: "I don't know."
+                You are a helpful assistant. Given the image and metadata as a support data to answer the user's question. 
+                Be concise and accurate. Do not say anything other than answering the question, and no explanations for the answer. 
+                If you dont know the answer, respond with: "I don't know."
 
                 <|user|>
-                Image summary: {image_summary}
-                Metadata: {metadata}
+                Metadata: {summarized_data}
                 Question: {query}
                 <|image|>
                 Answer:"""
             inputs = self.vision_processor(images=image, text=prompt, return_tensors="pt").to(self.vision_model.device)
             with torch.no_grad():
-                outputs = self.vision_model.generate(**inputs, max_new_tokens=MAX_GENERATED_TOKENS)
+                outputs = self.vision_model.generate(**inputs, max_new_tokens=16)
             answer = self.vision_processor.batch_decode(outputs, skip_special_tokens=True)[0].split("Answer:")[-1].strip()
             responses.append(answer)
 

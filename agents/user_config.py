@@ -1,3 +1,3 @@
-from agents.my_agent import MyAgent
+from agents.random_agent import RandomAgent
 
-UserAgent = MyAgent
+UserAgent = RandomAgent

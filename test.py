@@ -1,27 +1,19 @@
 from PIL import Image
-from transformers import Blip2Processor, Blip2ForConditionalGeneration
-import torch
 
-image = Image.open("test/post1.png")
+from cragmm_search.search import UnifiedSearchPipeline
 
-VISION_MODEL_NAME = "Salesforce/blip2-flan-t5-xl"
+search_api_text_model_name = None
+search_api_image_model_name = "openai/clip-vit-large-patch14-336"
+search_api_web_hf_dataset_id = None
+search_api_image_hf_dataset_id = "crag-mm-2025/image-search-index-validation"
 
-vision_processor = Blip2Processor.from_pretrained(VISION_MODEL_NAME)
-vision_model = Blip2ForConditionalGeneration.from_pretrained(
-VISION_MODEL_NAME,
-device_map="auto",              
-offload_folder="./offload_vlm", 
-trust_remote_code=True,
-torch_dtype=torch.float16
-).eval().cuda()
+search_pipeline = UnifiedSearchPipeline(
+    text_model_name=search_api_text_model_name,
+    image_model_name=search_api_image_model_name,
+    web_hf_dataset_id=search_api_web_hf_dataset_id,
+    image_hf_dataset_id=search_api_image_hf_dataset_id,
+)
 
-query = "Can i throw batteries in the left bin?"
+image = Image.open("pre.png")
 
-prompt = f"""
-            You are a helpful assistant, describe this image as long as you can, make sure those are the key points of the given image.
-        """
-inputs = vision_processor(images=image, text=prompt, return_tensors="pt").to(vision_model.device)
-with torch.no_grad():
-    outputs = vision_model.generate(**inputs, max_new_tokens=128)
-text = vision_processor.tokenizer.batch_decode(outputs, skip_special_tokens=True)
-print(text)
+print(search_pipeline(image))
