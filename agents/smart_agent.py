@@ -246,7 +246,7 @@ class MyAgent(BaseAgent):
         responses = []
 
         for query, image in zip(queries, images):
-            raw_data = self.search_pipeline(image, k=SEARCH_COUNT)
+            raw_data = self.search_pipeline(image, k=1)
 
             summarized_data = ". ".join([self.summarize_data(data) for data in raw_data])
 
